@@ -1,26 +1,13 @@
 <script lang="ts">
 	import '../app.css';
 	import { page } from '$app/state';
-	import { api } from '#lib/lastfm';
+	import { getProfile } from '#lib/lastfm';
 	import Icon from '#lib/Icon.svelte';
 	import { settings } from '#lib/settings.svelte';
 	import { TOOLS } from '#lib/tools';
 	import { fmt } from '#lib/util';
 	import { tick } from 'svelte';
 	import type { LayoutProps } from './$types';
-
-	interface RawUser {
-		user: {
-			name: string;
-			realname?: string;
-			playcount: string;
-			artist_count: string;
-			album_count: string;
-			track_count: string;
-			registered: { unixtime: string };
-			image?: { size: string; '#text': string }[];
-		};
-	}
 
 	let { data, children }: LayoutProps = $props();
 	let draft = $state(settings.username);
@@ -86,20 +73,8 @@
 			settings.profile = null;
 			return;
 		}
-		api<RawUser>('user.getinfo', { user: name })
-			.then(({ user }) => {
-				const img = (user.image ?? []).find((i) => i.size === 'extralarge') ?? (user.image ?? []).at(-1);
-				settings.profile = {
-					name: user.name,
-					realname: user.realname ?? '',
-					avatar: img?.['#text'] ?? '',
-					scrobbles: Number(user.playcount),
-					artists: Number(user.artist_count),
-					albums: Number(user.album_count),
-					tracks: Number(user.track_count),
-					since: new Date(Number(user.registered.unixtime) * 1000).getFullYear()
-				};
-			})
+		getProfile(name)
+			.then((profile) => (settings.profile = profile))
 			.catch(() => (settings.profile = null));
 	});
 
