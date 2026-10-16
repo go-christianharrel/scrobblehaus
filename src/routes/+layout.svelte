@@ -118,6 +118,7 @@
 	<link rel="icon" href="/favicon.ico" sizes="48x48" />
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 	<title>{seo.title}</title>
+	<meta name="google-site-verification" content="g2MVCqPgEEcdasM2OwFdYNZdckgQoW4AOr2Wwoxs0kk" />
 	<meta name="description" content={seo.desc} />
 	<link rel="canonical" href={canonical} />
 	<meta property="og:site_name" content="Scrobblehaus" />
