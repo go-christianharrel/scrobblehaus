@@ -7,9 +7,15 @@ export type CollageOptions = {
 	tile: number;
 	gap: number;
 	background: string;
-	labels: boolean;
-	plays: boolean;
+	showName: boolean;
+	showArtist: boolean;
+	showPlays: boolean;
+	showRank: boolean;
+	/** Multiplier for label text, 1 is the default size. */
+	textScale: number;
 };
+
+type LabelLine = { text: string; font: string; color: string };
 
 export function loadImage(src: string): Promise<HTMLImageElement | null> {
 	return new Promise((resolve) => {
@@ -78,6 +84,33 @@ function drawTextTile(
 	ctx.textBaseline = 'alphabetic';
 }
 
+function buildLabelLines(
+	item: TopItem,
+	fs: number,
+	o: CollageOptions
+): LabelLine[] {
+	const lines: LabelLine[] = [];
+	if (o.showArtist && item.artist)
+		lines.push({
+			text: item.artist,
+			font: `${fs}px sans-serif`,
+			color: '#ccc'
+		});
+	if (o.showName)
+		lines.push({
+			text: item.name,
+			font: `700 ${fs}px sans-serif`,
+			color: '#fff'
+		});
+	if (o.showPlays)
+		lines.push({
+			text: `${fmt(item.plays)} plays`,
+			font: `${fs}px sans-serif`,
+			color: '#ff8a82'
+		});
+	return lines;
+}
+
 function drawLabel(
 	ctx: CanvasRenderingContext2D,
 	item: TopItem,
@@ -86,9 +119,10 @@ function drawLabel(
 	tile: number,
 	o: CollageOptions
 ): void {
-	const fs = Math.max(9, tile / 17);
-	const lineCount = (o.labels ? (item.artist ? 2 : 1) : 0) + (o.plays ? 1 : 0);
-	const bh = lineCount * fs * 1.25 + fs * 0.6;
+	const fs = Math.max(9, tile / 17) * o.textScale;
+	const lines = buildLabelLines(item, fs, o);
+	if (!lines.length) return;
+	const bh = lines.length * fs * 1.25 + fs * 0.6;
 	const g = ctx.createLinearGradient(0, y + tile - bh, 0, y + tile);
 	g.addColorStop(0, 'rgba(0,0,0,0)');
 	g.addColorStop(0.35, 'rgba(0,0,0,.75)');
@@ -97,27 +131,39 @@ function drawLabel(
 	ctx.fillRect(x, y + tile - bh, tile, bh);
 
 	const pad = tile * 0.04;
-	const maxW = tile - pad * 2;
-	let ty = y + tile - fs * 0.5;
 	ctx.shadowColor = 'rgba(0,0,0,.8)';
 	ctx.shadowBlur = 3;
-	if (o.plays) {
-		ctx.font = `${fs}px sans-serif`;
-		ctx.fillStyle = '#ff8a82';
-		ctx.fillText(`${fmt(item.plays)} plays`, x + pad, ty);
-		ty -= fs * 1.25;
-	}
-	if (o.labels) {
-		ctx.fillStyle = '#fff';
-		ctx.font = `700 ${fs}px sans-serif`;
-		ctx.fillText(fitText(ctx, item.name, maxW), x + pad, ty);
-		if (item.artist) {
-			ctx.font = `${fs}px sans-serif`;
-			ctx.fillStyle = '#ccc';
-			ctx.fillText(fitText(ctx, item.artist, maxW), x + pad, ty - fs * 1.25);
-		}
-	}
+	// Lines are ordered top to bottom; draw from the bottom edge upwards.
+	lines.reverse().forEach((line, i) => {
+		ctx.font = line.font;
+		ctx.fillStyle = line.color;
+		const ty = y + tile - fs * 0.5 - i * fs * 1.25;
+		ctx.fillText(fitText(ctx, line.text, tile - pad * 2), x + pad, ty);
+	});
 	ctx.shadowBlur = 0;
+}
+
+function drawRank(
+	ctx: CanvasRenderingContext2D,
+	rank: number,
+	x: number,
+	y: number,
+	tile: number
+): void {
+	const r = Math.max(9, tile / 12);
+	const cx = x + r + tile * 0.04;
+	const cy = y + r + tile * 0.04;
+	ctx.fillStyle = 'rgba(0,0,0,.7)';
+	ctx.beginPath();
+	ctx.arc(cx, cy, r, 0, Math.PI * 2);
+	ctx.fill();
+	ctx.fillStyle = '#fff';
+	ctx.font = `700 ${r * 1.1}px sans-serif`;
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	ctx.fillText(String(rank), cx, cy);
+	ctx.textAlign = 'left';
+	ctx.textBaseline = 'alphabetic';
 }
 
 export function renderCollage(
@@ -138,6 +184,7 @@ export function renderCollage(
 		const im = images[idx];
 		if (im) ctx.drawImage(im, x, y, o.tile, o.tile);
 		else drawTextTile(ctx, item, x, y, o.tile);
-		if (o.labels || o.plays) drawLabel(ctx, item, x, y, o.tile, o);
+		drawLabel(ctx, item, x, y, o.tile, o);
+		if (o.showRank) drawRank(ctx, idx + 1, x, y, o.tile);
 	});
 }

@@ -9,6 +9,8 @@
 	import { onMount, tick } from 'svelte';
 	import type { LayoutProps } from './$types';
 
+	const REPO_URL = 'https://github.com/go-christianharrel/scrobblehaus';
+
 	let { data, children }: LayoutProps = $props();
 	let draft = $state(settings.username);
 	let avatarOk = $state(true);
@@ -153,6 +155,15 @@
 	<aside class="noprint">
 		<div class="top">
 			<a class="logo" href="/">Scrobble<span>haus</span></a>
+			<a
+				class="gh-icon"
+				href={REPO_URL}
+				target="_blank"
+				rel="noopener"
+				aria-label="View source on GitHub"
+			>
+				<Icon name="github" size={18} />
+			</a>
 			<button
 				class="theme"
 				onclick={toggleTheme}
@@ -289,7 +300,19 @@
 			{/each}
 		</nav>
 
-		<p class="credit">Powered by Last.fm data</p>
+		<div class="credit">
+			<a
+				class="gh"
+				href={REPO_URL}
+				target="_blank"
+				rel="noopener"
+				aria-label="View source on GitHub"
+				title="View source on GitHub"
+			>
+				<Icon name="github" size={18} />
+			</a>
+			<p>Powered by Last.fm data</p>
+		</div>
 	</aside>
 
 	<main>
@@ -365,6 +388,29 @@
 	.credit {
 		margin: auto 6px 0;
 		font-size: 12px;
+		color: var(--muted);
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+	.credit p {
+		margin: 0;
+	}
+	.gh {
+		display: grid;
+		place-items: center;
+		color: var(--muted);
+		transition: color 0.15s;
+	}
+	.gh:hover {
+		color: var(--text);
+	}
+	.gh-icon {
+		display: none;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
 		color: var(--muted);
 	}
 	.top {
@@ -595,6 +641,12 @@
 			gap: 10px;
 			padding: 10px 14px;
 			background: var(--aside-m);
+		}
+		.credit {
+			display: none;
+		}
+		.gh-icon {
+			display: grid;
 		}
 		.menu {
 			display: grid;
