@@ -306,12 +306,12 @@
 				href={REPO_URL}
 				target="_blank"
 				rel="noopener"
-				title="Free and open source. Star the repo to support it."
+				aria-label="View source on GitHub"
+				title="View source on GitHub"
 			>
-				<Icon name="github" size={16} />
-				<span>Star on GitHub</span>
+				<Icon name="github" size={18} />
 			</a>
-			<p>Powered by Last.fm data · MIT</p>
+			<p>Powered by Last.fm data</p>
 		</div>
 	</aside>
 
@@ -390,27 +390,20 @@
 		font-size: 12px;
 		color: var(--muted);
 		display: flex;
-		flex-direction: column;
-		gap: 8px;
+		align-items: center;
+		gap: 10px;
 	}
 	.credit p {
 		margin: 0;
 	}
 	.gh {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		width: fit-content;
-		padding: 7px 12px;
-		border-radius: 999px;
-		border: 1px solid var(--line2);
-		background: var(--panel);
+		display: grid;
+		place-items: center;
+		color: var(--muted);
+		transition: color 0.15s;
+	}
+	.gh:hover {
 		color: var(--text);
-		font-weight: 600;
-		text-decoration: none;
-		transition:
-			background 0.15s,
-			border-color 0.15s;
 	}
 	.gh-icon {
 		display: none;
@@ -419,10 +412,6 @@
 		height: 36px;
 		border-radius: 50%;
 		color: var(--muted);
-	}
-	.gh:hover {
-		background: var(--hover);
-		border-color: var(--accent2);
 	}
 	.top {
 		display: flex;
