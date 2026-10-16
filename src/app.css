@@ -66,6 +66,8 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .status.busy::after { content: ''; position: absolute; left: 0; bottom: 0; height: 2px; width: 40%; background: var(--grad); border-radius: 2px; animation: sweep 1.3s ease-in-out infinite; }
 @keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
 @media (prefers-reduced-motion: reduce) { .status.busy::before, .status.busy::after { animation-duration: 3s; } }
+.skel { display: block; background: linear-gradient(90deg, var(--panel2) 25%, var(--hover) 50%, var(--panel2) 75%); background-size: 200% 100%; border-radius: 8px; animation: skel 1.3s ease-in-out infinite; }
+@keyframes skel { to { background-position: -200% 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 .hint { background: var(--grad-soft); border: 1px solid rgba(255, 122, 89, 0.3); padding: 12px 16px; border-radius: 14px; color: var(--text); margin-bottom: 16px; }
 

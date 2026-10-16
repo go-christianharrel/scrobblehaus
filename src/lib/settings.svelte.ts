@@ -30,15 +30,32 @@ export interface Profile {
 	since: number;
 }
 
+const readProfile = (name: string): Profile | null => {
+	try {
+		const cached = JSON.parse(read('lfm_profile') || 'null') as Profile | null;
+		return cached && cached.name.toLowerCase() === name.toLowerCase() ? cached : null;
+	} catch {
+		return null;
+	}
+};
+
 class Settings {
 	username = $state(read('lfm_user'));
-	/** Loaded by the layout once a username is known. */
-	profile = $state<Profile | null>(null);
+	/** Cached copy shows instantly on reload, then the layout refreshes it. */
+	profile = $state<Profile | null>(readProfile(read('lfm_user')));
+	/** True while the profile request is in flight. */
+	profileLoading = $state(false);
+	/** False on the server and during hydration, so saved-user UI never flashes the signed-out state. */
+	ready = $state(false);
 	/** False when the server has no LASTFM_API_KEY yet; only the site owner ever sees this. */
 	serverKey = $state(true);
 
 	save(): void {
 		write('lfm_user', this.username.trim());
+	}
+
+	cacheProfile(profile: Profile | null): void {
+		write('lfm_profile', profile ? JSON.stringify(profile) : '');
 	}
 
 	requireUser(): string {
