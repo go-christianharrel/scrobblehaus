@@ -22,14 +22,23 @@ export function loadImage(src: string): Promise<HTMLImageElement | null> {
 	});
 }
 
-function fitText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string {
+function fitText(
+	ctx: CanvasRenderingContext2D,
+	text: string,
+	maxW: number
+): string {
 	if (ctx.measureText(text).width <= maxW) return text;
 	let t = text;
-	while (t.length > 1 && ctx.measureText(`${t}…`).width > maxW) t = t.slice(0, -1);
+	while (t.length > 1 && ctx.measureText(`${t}…`).width > maxW)
+		t = t.slice(0, -1);
 	return `${t}…`;
 }
 
-function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
+function wrapLines(
+	ctx: CanvasRenderingContext2D,
+	text: string,
+	maxW: number
+): string[] {
 	const lines: string[] = [];
 	let cur = '';
 	for (const word of text.split(/\s+/)) {
@@ -43,7 +52,13 @@ function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxW: number): s
 	return lines;
 }
 
-function drawTextTile(ctx: CanvasRenderingContext2D, item: TopItem, x: number, y: number, tile: number): void {
+function drawTextTile(
+	ctx: CanvasRenderingContext2D,
+	item: TopItem,
+	x: number,
+	y: number,
+	tile: number
+): void {
 	ctx.fillStyle = `hsl(${hashHue(item.name)},45%,28%)`;
 	ctx.fillRect(x, y, tile, tile);
 	ctx.fillStyle = '#fff';
@@ -52,12 +67,25 @@ function drawTextTile(ctx: CanvasRenderingContext2D, item: TopItem, x: number, y
 	const fs = Math.max(10, tile / 9);
 	ctx.font = `600 ${fs}px sans-serif`;
 	const lines = wrapLines(ctx, item.name, tile * 0.85).slice(0, 4);
-	lines.forEach((l, i) => ctx.fillText(l, x + tile / 2, y + tile / 2 + (i - (lines.length - 1) / 2) * fs * 1.2));
+	lines.forEach((l, i) =>
+		ctx.fillText(
+			l,
+			x + tile / 2,
+			y + tile / 2 + (i - (lines.length - 1) / 2) * fs * 1.2
+		)
+	);
 	ctx.textAlign = 'left';
 	ctx.textBaseline = 'alphabetic';
 }
 
-function drawLabel(ctx: CanvasRenderingContext2D, item: TopItem, x: number, y: number, tile: number, o: CollageOptions): void {
+function drawLabel(
+	ctx: CanvasRenderingContext2D,
+	item: TopItem,
+	x: number,
+	y: number,
+	tile: number,
+	o: CollageOptions
+): void {
 	const fs = Math.max(9, tile / 17);
 	const lineCount = (o.labels ? (item.artist ? 2 : 1) : 0) + (o.plays ? 1 : 0);
 	const bh = lineCount * fs * 1.25 + fs * 0.6;
@@ -92,7 +120,12 @@ function drawLabel(ctx: CanvasRenderingContext2D, item: TopItem, x: number, y: n
 	ctx.shadowBlur = 0;
 }
 
-export function renderCollage(canvas: HTMLCanvasElement, items: TopItem[], images: (HTMLImageElement | null)[], o: CollageOptions): void {
+export function renderCollage(
+	canvas: HTMLCanvasElement,
+	items: TopItem[],
+	images: (HTMLImageElement | null)[],
+	o: CollageOptions
+): void {
 	const ctx = canvas.getContext('2d');
 	if (!ctx) throw new Error('Canvas is not supported in this browser.');
 	canvas.width = o.cols * o.tile + o.gap * (o.cols + 1);

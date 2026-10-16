@@ -33,7 +33,9 @@ export type Profile = {
 const readProfile = (name: string): Profile | null => {
 	try {
 		const cached = JSON.parse(read('lfm_profile') || 'null') as Profile | null;
-		return cached && cached.name.toLowerCase() === name.toLowerCase() ? cached : null;
+		return cached && cached.name.toLowerCase() === name.toLowerCase()
+			? cached
+			: null;
 	} catch {
 		return null;
 	}

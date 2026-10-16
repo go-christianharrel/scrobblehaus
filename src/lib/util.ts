@@ -1,6 +1,7 @@
 export const fmt = (n: number | string): string => Number(n).toLocaleString();
 
-export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms: number): Promise<void> =>
+	new Promise((resolve) => setTimeout(resolve, ms));
 
 export const stamp = (): string => new Date().toISOString().slice(0, 10);
 
@@ -33,7 +34,11 @@ export function download(name: string, text: string, type: string): void {
 	setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-export function topCounts<T>(rows: T[], keyFn: (row: T) => string, n: number): [string, number][] {
+export function topCounts<T>(
+	rows: T[],
+	keyFn: (row: T) => string,
+	n: number
+): [string, number][] {
 	const counts = new Map<string, number>();
 	for (const row of rows) {
 		const k = keyFn(row);

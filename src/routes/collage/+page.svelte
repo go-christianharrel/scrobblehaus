@@ -32,10 +32,22 @@
 			status = 'Fetching data…';
 			const items = await getTop(type, period, c * r, user);
 			if (!items.length) throw new Error('No data for this period.');
-			await fillImages(items, type, (n, t) => (status = `Looking up images… ${n}/${t}`));
+			await fillImages(
+				items,
+				type,
+				(n, t) => (status = `Looking up images… ${n}/${t}`)
+			);
 			status = 'Loading cover art…';
 			const images = await Promise.all(items.map((i) => loadImage(i.img)));
-			renderCollage(canvas, items, images, { cols: c, rows: r, tile: clamp(tile, 60, 300), gap: clamp(gap, 0, 40), background, labels, plays });
+			renderCollage(canvas, items, images, {
+				cols: c,
+				rows: r,
+				tile: clamp(tile, 60, 300),
+				gap: clamp(gap, 0, 40),
+				background,
+				labels,
+				plays
+			});
 			ready = true;
 			status = `Done: ${items.length} items (${canvas.width}×${canvas.height}px).`;
 		} catch (e) {
@@ -64,30 +76,68 @@
 
 <PageHeader href="/collage" />
 <div class="controls">
-	<label>Type
+	<label
+		>Type
 		<select bind:value={type}>
 			<option value="albums">Albums</option>
 			<option value="artists">Artists</option>
 			<option value="tracks">Tracks</option>
 		</select>
 	</label>
-	<label>Period
+	<label
+		>Period
 		<select bind:value={period}>
-			{#each PERIODS as p (p.value)}<option value={p.value}>{p.label}</option>{/each}
+			{#each PERIODS as p (p.value)}<option value={p.value}>{p.label}</option
+				>{/each}
 		</select>
 	</label>
-	<label>Columns <input type="number" min="1" max="15" bind:value={cols} style="width: 70px" /></label>
-	<label>Rows <input type="number" min="1" max="15" bind:value={rows} style="width: 70px" /></label>
-	<label>Tile px <input type="number" min="60" max="300" step="10" bind:value={tile} style="width: 80px" /></label>
-	<label>Gap px <input type="number" min="0" max="40" bind:value={gap} style="width: 70px" /></label>
+	<label
+		>Columns <input
+			type="number"
+			min="1"
+			max="15"
+			bind:value={cols}
+			style="width: 70px"
+		/></label
+	>
+	<label
+		>Rows <input
+			type="number"
+			min="1"
+			max="15"
+			bind:value={rows}
+			style="width: 70px"
+		/></label
+	>
+	<label
+		>Tile px <input
+			type="number"
+			min="60"
+			max="300"
+			step="10"
+			bind:value={tile}
+			style="width: 80px"
+		/></label
+	>
+	<label
+		>Gap px <input
+			type="number"
+			min="0"
+			max="40"
+			bind:value={gap}
+			style="width: 70px"
+		/></label
+	>
 	<label>Background <input type="color" bind:value={background} /></label>
-	<label>Labels
+	<label
+		>Labels
 		<select bind:value={labels}>
 			<option value={true}>Overlay</option>
 			<option value={false}>None</option>
 		</select>
 	</label>
-	<label>Playcount
+	<label
+		>Playcount
 		<select bind:value={plays}>
 			<option value={false}>Hide</option>
 			<option value={true}>Show</option>
@@ -98,13 +148,35 @@
 	<button onclick={() => window.print()} disabled={!ready}>Print</button>
 </div>
 
-<div class="status" class:err={failed} class:busy={busy}>{status}</div>
-<p class="muted noprint">When Last.fm has no image, we look it up on Deezer and iTunes. If nothing is found, a colour tile with the name is shown.</p>
+<div class="status" class:err={failed} class:busy>{status}</div>
+<p class="muted noprint">
+	When Last.fm has no image, we look it up on Deezer and iTunes. If nothing is
+	found, a colour tile with the name is shown.
+</p>
 
-<div class="wrap"><canvas bind:this={canvas} width="10" height="10"></canvas></div>
+<div class="wrap">
+	<canvas bind:this={canvas} width="10" height="10"></canvas>
+</div>
 
 <style>
-	.wrap { overflow: auto; background: #000; border-radius: 8px; padding: 8px; text-align: center; }
-	canvas { max-width: 100%; height: auto; }
-	@media print { .wrap { background: #fff; padding: 0; } canvas { width: 100% !important; } }
+	.wrap {
+		overflow: auto;
+		background: #000;
+		border-radius: 8px;
+		padding: 8px;
+		text-align: center;
+	}
+	canvas {
+		max-width: 100%;
+		height: auto;
+	}
+	@media print {
+		.wrap {
+			background: #fff;
+			padding: 0;
+		}
+		canvas {
+			width: 100% !important;
+		}
+	}
 </style>

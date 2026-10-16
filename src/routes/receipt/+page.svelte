@@ -51,29 +51,46 @@
 
 <PageHeader href="/receipt" />
 <div class="controls">
-	<label>Type
+	<label
+		>Type
 		<select bind:value={type}>
 			<option value="tracks">Tracks</option>
 			<option value="artists">Artists</option>
 			<option value="albums">Albums</option>
 		</select>
 	</label>
-	<label>Period
+	<label
+		>Period
 		<select bind:value={period}>
-			{#each PERIODS as p (p.value)}<option value={p.value}>{p.label}</option>{/each}
+			{#each PERIODS as p (p.value)}<option value={p.value}>{p.label}</option
+				>{/each}
 		</select>
 	</label>
-	<label>Items <input type="number" min="3" max="30" bind:value={limit} style="width: 70px" /></label>
-	<button class="primary" onclick={make} disabled={busy}>Print me a receipt</button>
-	<button onclick={() => window.print()} disabled={!items.length}>Print / Save PDF</button>
+	<label
+		>Items <input
+			type="number"
+			min="3"
+			max="30"
+			bind:value={limit}
+			style="width: 70px"
+		/></label
+	>
+	<button class="primary" onclick={make} disabled={busy}
+		>Print me a receipt</button
+	>
+	<button onclick={() => window.print()} disabled={!items.length}
+		>Print / Save PDF</button
+	>
 </div>
 
-<div class="status" class:err={failed} class:busy={busy}>{status}</div>
+<div class="status" class:err={failed} class:busy>{status}</div>
 
 {#if items.length}
 	<div class="receipt">
 		<h2>LAST.FM</h2>
-		<div class="c">TOP {shownType.toUpperCase()} — {periodLabel(shownPeriod).toUpperCase()}</div>
+		<div class="c">
+			TOP {shownType.toUpperCase()} — {periodLabel(shownPeriod).toUpperCase()}
+		</div>
 		<div class="c">ORDER #{order} FOR {user.toUpperCase()}</div>
 		<div class="c">{printedAt}</div>
 		<hr />
@@ -97,12 +114,67 @@
 {/if}
 
 <style>
-	.receipt { background: #fff; color: #111; font-family: 'Courier New', monospace; max-width: 380px; margin: 8px auto; padding: 28px 24px 34px; font-size: 13px; filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.55)); --z: 10px; -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(var(--z) * 2) 51% repeat-x, linear-gradient(#000 0 0) top / 100% calc(100% - var(--z) + 1px) no-repeat; mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(var(--z) * 2) 51% repeat-x, linear-gradient(#000 0 0) top / 100% calc(100% - var(--z) + 1px) no-repeat; animation: rise 0.5s ease both; }
-	h2 { text-align: center; margin: 0 0 4px; font-size: 18px; letter-spacing: 2px; }
-	.c { text-align: center; }
-	hr { border: 0; border-top: 1px dashed #444; margin: 10px 0; }
-	.r { display: flex; gap: 8px; justify-content: space-between; }
-	.grow { flex: 1; overflow: hidden; text-overflow: ellipsis; }
-	.bc { height: 44px; margin: 12px 0 4px; background: repeating-linear-gradient(90deg, #111 0 2px, #fff 2px 4px, #111 4px 5px, #fff 5px 9px, #111 9px 12px, #fff 12px 14px); }
-	@media print { .receipt { filter: none; animation: none; } }
+	.receipt {
+		background: #fff;
+		color: #111;
+		font-family: 'Courier New', monospace;
+		max-width: 380px;
+		margin: 8px auto;
+		padding: 28px 24px 34px;
+		font-size: 13px;
+		filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.55));
+		--z: 10px;
+		-webkit-mask:
+			conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg)
+				bottom / calc(var(--z) * 2) 51% repeat-x,
+			linear-gradient(#000 0 0) top / 100% calc(100% - var(--z) + 1px) no-repeat;
+		mask:
+			conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg)
+				bottom / calc(var(--z) * 2) 51% repeat-x,
+			linear-gradient(#000 0 0) top / 100% calc(100% - var(--z) + 1px) no-repeat;
+		animation: rise 0.5s ease both;
+	}
+	h2 {
+		text-align: center;
+		margin: 0 0 4px;
+		font-size: 18px;
+		letter-spacing: 2px;
+	}
+	.c {
+		text-align: center;
+	}
+	hr {
+		border: 0;
+		border-top: 1px dashed #444;
+		margin: 10px 0;
+	}
+	.r {
+		display: flex;
+		gap: 8px;
+		justify-content: space-between;
+	}
+	.grow {
+		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.bc {
+		height: 44px;
+		margin: 12px 0 4px;
+		background: repeating-linear-gradient(
+			90deg,
+			#111 0 2px,
+			#fff 2px 4px,
+			#111 4px 5px,
+			#fff 5px 9px,
+			#111 9px 12px,
+			#fff 12px 14px
+		);
+	}
+	@media print {
+		.receipt {
+			filter: none;
+			animation: none;
+		}
+	}
 </style>
