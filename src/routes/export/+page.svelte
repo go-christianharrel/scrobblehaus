@@ -37,7 +37,7 @@
 		}
 	}
 
-	const exportScrobbles = () =>
+	const exportScrobbles = (): Promise<void> =>
 		run(async () => {
 			const user = settings.requireUser();
 			const start = from ? Math.floor(new Date(`${from}T00:00:00`).getTime() / 1000) : 0;
@@ -64,7 +64,7 @@
 			status = `${abort.aborted ? 'Cancelled. ' : 'Done! '}${fmt(rows.length)} scrobbles exported. You can now use them in Insights.`;
 		});
 
-	const exportLoved = () =>
+	const exportLoved = (): Promise<void> =>
 		run(async () => {
 			const user = settings.requireUser();
 			const rows: string[][] = [];
@@ -81,7 +81,7 @@
 			status = `${rows.length} loved tracks exported.`;
 		});
 
-	const exportTop = (type: TopType) =>
+	const exportTop = (type: TopType): Promise<void> =>
 		run(async () => {
 			const user = settings.requireUser();
 			status = 'Loading…';
