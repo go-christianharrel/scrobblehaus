@@ -33,3 +33,7 @@ The project uses `@sveltejs/adapter-vercel`. Import the repo into Vercel and set
 npm run check
 npm run build
 ```
+
+## License
+
+[MIT](LICENSE)
