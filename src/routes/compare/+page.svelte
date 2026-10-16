@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PageHeader from '#lib/PageHeader.svelte';
-	import { getTop } from '#lib/lastfm';
-	import { settings } from '#lib/settings.svelte';
+	import { getProfile, getTop } from '#lib/lastfm';
+	import { settings, type Profile } from '#lib/settings.svelte';
 	import { PERIODS } from '#lib/types';
 	import { fmt } from '#lib/util';
 
@@ -20,6 +20,8 @@
 	let score = $state<number | null>(null);
 	let me = $state('');
 	let them = $state('');
+	let meProfile = $state<Profile | null>(null);
+	let themProfile = $state<Profile | null>(null);
 
 	const verdict = $derived(
 		score === null ? '' : score >= 70 ? 'Musical soulmates' : score >= 45 ? 'Very much in sync' : score >= 20 ? 'Some common ground' : score > 0 ? 'Different wavelengths' : 'Total opposites'
@@ -32,11 +34,19 @@
 		status = 'Comparing…';
 		score = null;
 		shared = [];
+		meProfile = themProfile = null;
 		try {
 			const user = settings.requireUser();
 			const friend = other.trim();
 			if (!friend) throw new Error("Type your friend's Last.fm username first.");
-			const [a, b] = await Promise.all([getTop('artists', period, 500, user), getTop('artists', period, 500, friend)]);
+			const [a, b, pa, pb] = await Promise.all([
+				getTop('artists', period, 500, user),
+				getTop('artists', period, 500, friend),
+				getProfile(user).catch(() => null),
+				getProfile(friend).catch(() => null)
+			]);
+			meProfile = pa;
+			themProfile = pb;
 			const theirs = new Map(b.map((x) => [x.name.toLowerCase(), x.plays]));
 			shared = a
 				.filter((x) => theirs.has(x.name.toLowerCase()))
@@ -45,8 +55,8 @@
 			const overlap = shared.reduce((s, x) => s + Math.min(x.mine, x.theirs), 0);
 			const base = Math.min(a.reduce((s, x) => s + x.plays, 0), b.reduce((s, x) => s + x.plays, 0)) || 1;
 			score = Math.min(100, Math.round((overlap / base) * 100));
-			me = user;
-			them = friend;
+			me = pa?.name ?? user;
+			them = pb?.name ?? friend;
 			status = '';
 		} catch (e) {
 			failed = true;
@@ -56,6 +66,18 @@
 		}
 	}
 </script>
+
+{#snippet person(name: string, profile: Profile | null, alt: boolean)}
+	<a class="who" href="https://www.last.fm/user/{encodeURIComponent(name)}" target="_blank" rel="noopener">
+		{#if profile?.avatar}
+			<img class="av" class:alt src={profile.avatar} alt="" onerror={(e) => ((e.currentTarget as HTMLImageElement).style.visibility = 'hidden')} />
+		{:else}
+			<span class="av" class:alt>{name.slice(0, 1).toUpperCase()}</span>
+		{/if}
+		<span class="nm">{name}</span>
+		{#if profile}<span class="muted sm">{fmt(profile.scrobbles)} scrobbles · since {profile.since}</span>{/if}
+	</a>
+{/snippet}
 
 <PageHeader href="/compare" />
 <form class="controls" onsubmit={(e) => { e.preventDefault(); compare(); }}>
@@ -81,13 +103,13 @@
 
 {#if score !== null}
 	<div class="card hero">
-		<div class="who"><span class="av">{me.slice(0, 1).toUpperCase()}</span><span class="nm">{me}</span></div>
+		{@render person(me, meProfile, false)}
 		<div class="mid">
 			<div class="big">{score}%</div>
 			<div class="verdict">{verdict}</div>
 			<div class="muted sm">{shared.length} shared artist{shared.length === 1 ? '' : 's'}</div>
 		</div>
-		<div class="who"><span class="av alt">{them.slice(0, 1).toUpperCase()}</span><span class="nm">{them}</span></div>
+		{@render person(them, themProfile, true)}
 	</div>
 
 	{#if shared.length}
@@ -131,8 +153,8 @@
 	.hero { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; text-align: center; }
 	.mid .verdict { font-family: var(--display); font-weight: 700; margin-top: 2px; }
 	.sm { font-size: 12px; margin-top: 2px; }
-	.who { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
-	.av { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font: 800 22px var(--display); color: #fff; background: var(--grad); box-shadow: 0 8px 24px rgba(255, 45, 85, 0.35); }
+	.who { color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+	.av { width: 72px; height: 72px; object-fit: cover; border-radius: 50%; display: grid; place-items: center; font: 800 22px var(--display); color: #fff; background: var(--grad); box-shadow: 0 8px 24px rgba(255, 45, 85, 0.35); }
 	.av.alt { background: linear-gradient(135deg, #5b8cff, #9b5cff); box-shadow: 0 8px 24px rgba(110, 100, 255, 0.35); }
 	.nm { font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 	.chips.top { margin-top: 12px; }

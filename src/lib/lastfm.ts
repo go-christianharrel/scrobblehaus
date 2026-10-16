@@ -1,5 +1,34 @@
+import type { Profile } from './settings.svelte';
 import { sleep } from './util';
 import type { RawItem, RawRecent, RawRecentTrack, RawWrap, Scrobble, TopItem, TopType } from './types';
+
+interface RawUser {
+	user: {
+		name: string;
+		realname?: string;
+		playcount: string;
+		artist_count: string;
+		album_count: string;
+		track_count: string;
+		registered: { unixtime: string };
+		image?: { size: string; '#text': string }[];
+	};
+}
+
+export async function getProfile(name: string): Promise<Profile> {
+	const { user } = await api<RawUser>('user.getinfo', { user: name });
+	const img = (user.image ?? []).find((i) => i.size === 'extralarge') ?? (user.image ?? []).at(-1);
+	return {
+		name: user.name,
+		realname: user.realname ?? '',
+		avatar: img?.['#text'] ?? '',
+		scrobbles: Number(user.playcount),
+		artists: Number(user.artist_count),
+		albums: Number(user.album_count),
+		tracks: Number(user.track_count),
+		since: new Date(Number(user.registered.unixtime) * 1000).getFullYear()
+	};
+}
 
 export const PLACEHOLDER = '2a96cbd8b46e442fc41c2b86b821562f';
 
