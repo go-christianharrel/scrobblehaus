@@ -13,7 +13,37 @@
 	--grad-soft: linear-gradient(135deg, rgba(255, 45, 85, 0.22), rgba(255, 154, 86, 0.12));
 	--radius: 18px;
 	--shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+	--hover: rgba(255, 255, 255, 0.1);
+	--hover-soft: rgba(255, 255, 255, 0.04);
+	--aside: rgba(12, 14, 20, 0.72);
+	--aside-m: rgba(9, 11, 16, 0.88);
+	--blob1: rgba(255, 45, 85, 0.22);
+	--blob2: rgba(255, 154, 86, 0.12);
+	--blob3: rgba(120, 80, 255, 0.1);
+	color-scheme: dark;
 	--display: 'Sora', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+:root[data-theme='light'] {
+	--bg: #f6f6fa;
+	--glass: rgba(255, 255, 255, 0.78);
+	--panel: rgba(20, 24, 40, 0.04);
+	--panel2: rgba(20, 24, 40, 0.06);
+	--line: rgba(20, 24, 40, 0.1);
+	--line2: rgba(20, 24, 40, 0.2);
+	--text: #181b27;
+	--muted: #5f6880;
+	--accent: #e0213f;
+	--accent2: #d9472b;
+	--grad-soft: linear-gradient(135deg, rgba(255, 45, 85, 0.12), rgba(255, 154, 86, 0.1));
+	--shadow: 0 14px 40px rgba(40, 50, 90, 0.12);
+	--hover: rgba(20, 24, 40, 0.09);
+	--hover-soft: rgba(20, 24, 40, 0.04);
+	--aside: rgba(255, 255, 255, 0.72);
+	--aside-m: rgba(248, 248, 252, 0.9);
+	--blob1: rgba(255, 45, 85, 0.13);
+	--blob2: rgba(255, 154, 86, 0.16);
+	--blob3: rgba(120, 80, 255, 0.1);
+	color-scheme: light;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -30,7 +60,7 @@ body::before {
 	position: fixed;
 	inset: -20%;
 	z-index: -1;
-	background: radial-gradient(40% 35% at 78% 8%, rgba(255, 45, 85, 0.22), transparent 70%), radial-gradient(35% 30% at 8% 30%, rgba(255, 154, 86, 0.12), transparent 70%), radial-gradient(45% 40% at 60% 100%, rgba(120, 80, 255, 0.1), transparent 70%);
+	background: radial-gradient(40% 35% at 78% 8%, var(--blob1), transparent 70%), radial-gradient(35% 30% at 8% 30%, var(--blob2), transparent 70%), radial-gradient(45% 40% at 60% 100%, var(--blob3), transparent 70%);
 	animation: drift 24s ease-in-out infinite alternate;
 }
 @keyframes drift { to { transform: translate3d(-3%, 2%, 0) scale(1.06); } }
@@ -48,7 +78,7 @@ select option { background: #1a1e2b; }
 input:focus, select:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(255, 122, 89, 0.2); }
 input[type='color'] { padding: 3px; height: 42px; width: 56px; }
 button { cursor: pointer; font-weight: 600; }
-button:hover:not(:disabled) { border-color: var(--line2); background: rgba(255, 255, 255, 0.1); }
+button:hover:not(:disabled) { border-color: var(--line2); background: var(--hover); }
 button:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
 button.primary { background: var(--grad); border-color: transparent; color: #fff; box-shadow: 0 8px 24px rgba(255, 45, 85, 0.35); }
 button.primary:hover:not(:disabled) { filter: brightness(1.1); border-color: transparent; background: var(--grad); box-shadow: 0 10px 30px rgba(255, 45, 85, 0.5); }
@@ -72,7 +102,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--line); }
 tbody tr { transition: background 0.12s; }
-tbody tr:hover { background: rgba(255, 255, 255, 0.04); }
+tbody tr:hover { background: var(--hover-soft); }
 tbody tr:last-child td { border-bottom: 0; }
 th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; width: 100px; }
@@ -93,7 +123,7 @@ td.bar { width: 32%; }
 .axis { display: flex; gap: 4px; font-size: 10px; color: var(--muted); margin-top: 6px; }
 .axis span { flex: 1; text-align: center; }
 .heat { display: grid; grid-template-rows: repeat(7, 13px); grid-auto-flow: column; grid-auto-columns: 13px; gap: 3px; overflow-x: auto; padding-bottom: 8px; }
-.heat i { width: 13px; height: 13px; border-radius: 3px; background: rgba(255, 255, 255, 0.06); }
+.heat i { width: 13px; height: 13px; border-radius: 3px; background: var(--panel2); }
 .heat i.l1 { background: #5a1a22; }
 .heat i.l2 { background: #94202f; }
 .heat i.l3 { background: #d9283f; }
