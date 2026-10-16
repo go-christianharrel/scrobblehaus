@@ -5,11 +5,11 @@
 	import { PERIODS } from '#lib/types';
 	import { fmt } from '#lib/util';
 
-	interface Shared {
+	type Shared = {
 		name: string;
 		mine: number;
 		theirs: number;
-	}
+	};
 
 	let other = $state('');
 	let period = $state('overall');

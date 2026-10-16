@@ -2,7 +2,7 @@ import type { Profile } from './settings.svelte';
 import { sleep } from './util';
 import type { RawItem, RawRecent, RawRecentTrack, RawWrap, Scrobble, TopItem, TopType } from './types';
 
-interface RawUser {
+type RawUser = {
 	user: {
 		name: string;
 		realname?: string;
@@ -13,7 +13,7 @@ interface RawUser {
 		registered: { unixtime: string };
 		image?: { size: string; '#text': string }[];
 	};
-}
+};
 
 export async function getProfile(name: string): Promise<Profile> {
 	const { user } = await api<RawUser>('user.getinfo', { user: name });
