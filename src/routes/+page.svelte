@@ -41,7 +41,10 @@
 </script>
 
 <section class="hero">
-	{#if settings.username}
+	{#if !settings.ready}
+		<span class="skel line eyebrow-skel"></span>
+		<span class="skel line title-skel"></span>
+	{:else if settings.username}
 		<p class="eyebrow">{greeting}</p>
 		<h1><span>{settings.profile?.name ?? settings.username}</span></h1>
 		<p class="muted">Pick a tool — it runs straight away with your data.</p>
@@ -51,7 +54,11 @@
 	{/if}
 </section>
 
-{#if settings.profile}
+{#if settings.ready && settings.username && !settings.profile && settings.profileLoading}
+	<div class="stats">
+		{#each [0, 1, 2, 3, 4] as i (i)}<div class="stat"><span class="skel line big-skel"></span><span class="skel line w40"></span></div>{/each}
+	</div>
+{:else if settings.ready && settings.profile}
 	<div class="stats">
 		<div class="stat"><b>{fmt(settings.profile.scrobbles)}</b><span class="muted">Scrobbles</span></div>
 		<div class="stat"><b>{fmt(settings.profile.artists)}</b><span class="muted">Artists</span></div>
@@ -61,7 +68,7 @@
 	</div>
 {/if}
 
-{#if settings.username}
+{#if settings.ready && settings.username}
 	<h3>Now playing</h3>
 	<NowPlaying />
 {/if}
@@ -94,6 +101,10 @@
 </div>
 
 <style>
+	.eyebrow-skel { width: 120px; height: 14px; display: block; margin: 4px 0 12px; }
+	.title-skel { width: min(320px, 70%); height: 44px; display: block; border-radius: 12px; }
+	.big-skel { width: 90px; height: 28px; display: block; margin-bottom: 8px; border-radius: 8px; }
+	.w40 { width: 70px; display: block; }
 	.hero { padding: 8px 0 24px; }
 	.eyebrow { margin: 0 0 4px; font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2); }
 	h1 { font-size: clamp(34px, 6vw, 60px); letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 10px; }

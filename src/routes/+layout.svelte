@@ -79,6 +79,10 @@
 		switching = false;
 	}
 
+	onMount(() => {
+		settings.ready = true;
+	});
+
 	$effect(() => {
 		settings.serverKey = data.serverKey;
 	});
@@ -87,11 +91,17 @@
 		const name = settings.username.trim();
 		if (!name || !data.serverKey) {
 			settings.profile = null;
+			settings.cacheProfile(null);
 			return;
 		}
+		settings.profileLoading = true;
 		getProfile(name)
-			.then((profile) => (settings.profile = profile))
-			.catch(() => (settings.profile = null));
+			.then((profile) => {
+				settings.profile = profile;
+				settings.cacheProfile(profile);
+			})
+			.catch(() => (settings.profile = null))
+			.finally(() => (settings.profileLoading = false));
 	});
 
 	function apply(): void {
@@ -145,7 +155,12 @@
 		</div>
 
 		<div class="account" class:open={menuOpen}>
-		{#if settings.profile}
+		{#if !settings.ready || (settings.username && !settings.profile && settings.profileLoading)}
+			<div class="me skel-card" aria-busy="true" aria-label="Loading profile">
+				<span class="skel circle"></span>
+				<div><span class="skel line w60"></span><span class="skel line w40"></span></div>
+			</div>
+		{:else if settings.profile}
 			<button type="button" class="me" onclick={toggleSwitch} aria-expanded={showForm} title="Switch user">
 				{#if settings.profile.avatar && avatarOk}
 					<img src={settings.profile.avatar} alt="" onerror={() => (avatarOk = false)} />
@@ -160,7 +175,7 @@
 			</button>
 		{/if}
 
-		{#if showForm}
+		{#if settings.ready && showForm}
 			<form onsubmit={(e) => { e.preventDefault(); apply(); }}>
 				<label>
 					{settings.username ? 'Switch to another user' : 'Last.fm username'}
@@ -195,7 +210,7 @@
 				Visitors are never asked for a key.
 			</div>
 		{/if}
-		{#if !settings.username && page.url.pathname !== '/'}
+		{#if settings.ready && !settings.username && page.url.pathname !== '/'}
 			<div class="hint noprint">Type your Last.fm username in the sidebar to start.</div>
 		{/if}
 		{@render children()}
@@ -231,6 +246,11 @@
 	.me:hover { border-color: rgba(255, 122, 89, 0.5); }
 	.chev { margin-left: auto; color: var(--muted); font-size: 18px; line-height: 1; transition: transform 0.2s; }
 	.chev.up { transform: rotate(180deg); }
+	.skel-card { cursor: default; }
+	.skel-card .skel.circle { width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; }
+	.skel.line { height: 12px; margin: 3px 0; }
+	.skel.w60 { width: 110px; }
+	.skel.w40 { width: 70px; }
 	.me div { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
 	.me b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 	.me span.muted { font-size: 12px; }
