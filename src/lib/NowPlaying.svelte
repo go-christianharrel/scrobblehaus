@@ -110,7 +110,11 @@
 {/if}
 
 <style>
+	/* Always sits on a dark photo overlay, so keep light text in both themes. */
 	.stage {
+		--text: #f1f3f9;
+		--muted: rgba(241, 243, 249, 0.72);
+		color: var(--text);
 		position: relative;
 		overflow: hidden;
 		border-radius: 26px;
