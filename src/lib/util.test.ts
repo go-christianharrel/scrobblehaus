@@ -18,7 +18,10 @@ describe('util', () => {
 	});
 
 	it('escapes CSV cells', () => {
-		const csv = toCsv([['a,b', 'say "hi"'], [1, 2]]);
+		const csv = toCsv([
+			['a,b', 'say "hi"'],
+			[1, 2]
+		]);
 		expect(csv).toContain('"a,b","say ""hi"""');
 		expect(csv).toContain('\r\n1,2');
 	});

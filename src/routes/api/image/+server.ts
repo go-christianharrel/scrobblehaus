@@ -1,27 +1,31 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-interface DeezerAlbum {
+type DeezerAlbum = {
 	cover_xl?: string;
 	cover_big?: string;
-}
-interface DeezerHit extends DeezerAlbum {
+};
+type DeezerHit = DeezerAlbum & {
 	picture_xl?: string;
 	picture_big?: string;
 	album?: DeezerAlbum;
-}
-interface DeezerResponse {
+};
+type DeezerResponse = {
 	data?: DeezerHit[];
-}
-interface ItunesResponse {
+};
+type ItunesResponse = {
 	results?: { artworkUrl100?: string }[];
-}
+};
 
 const BLANK_DEEZER = 'd41d8cd98f00b204e9800998ecf8427e';
 const MAX_CACHE = 5000;
 const cache = new Map<string, string>();
 
-async function deezer(type: string, name: string, artist: string): Promise<string> {
+async function deezer(
+	type: string,
+	name: string,
+	artist: string
+): Promise<string> {
 	const base = 'https://api.deezer.com/search';
 	let endpoint = `${base}/artist?limit=1&q=${encodeURIComponent(name)}`;
 	if (type !== 'artists') {
@@ -33,14 +37,23 @@ async function deezer(type: string, name: string, artist: string): Promise<strin
 	const hit = ((await res.json()) as DeezerResponse).data?.[0];
 	if (!hit) return '';
 	const cover = hit.album ?? hit;
-	return hit.picture_xl ?? hit.picture_big ?? cover.cover_xl ?? cover.cover_big ?? '';
+	return (
+		hit.picture_xl ?? hit.picture_big ?? cover.cover_xl ?? cover.cover_big ?? ''
+	);
 }
 
-async function itunes(type: string, name: string, artist: string): Promise<string> {
+async function itunes(
+	type: string,
+	name: string,
+	artist: string
+): Promise<string> {
 	const entity = type === 'tracks' ? 'song' : 'album';
 	const term = encodeURIComponent(`${artist} ${name}`);
-	const res = await fetch(`https://itunes.apple.com/search?limit=1&entity=${entity}&term=${term}`);
-	const art = ((await res.json()) as ItunesResponse).results?.[0]?.artworkUrl100;
+	const res = await fetch(
+		`https://itunes.apple.com/search?limit=1&entity=${entity}&term=${term}`
+	);
+	const art = ((await res.json()) as ItunesResponse).results?.[0]
+		?.artworkUrl100;
 	return art ? art.replace('100x100', '600x600') : '';
 }
 

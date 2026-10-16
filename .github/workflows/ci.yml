@@ -19,6 +19,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Format
+        run: npm run format:check
       - name: Typecheck
         run: npm run check
       - name: Unit tests

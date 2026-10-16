@@ -1,6 +1,14 @@
 import type { Profile } from './settings.svelte';
 import { sleep } from './util';
-import type { RawItem, RawRecent, RawRecentTrack, RawWrap, Scrobble, TopItem, TopType } from './types';
+import type {
+	RawItem,
+	RawRecent,
+	RawRecentTrack,
+	RawWrap,
+	Scrobble,
+	TopItem,
+	TopType
+} from './types';
 
 type RawUser = {
 	user: {
@@ -17,7 +25,9 @@ type RawUser = {
 
 export async function getProfile(name: string): Promise<Profile> {
 	const { user } = await api<RawUser>('user.getinfo', { user: name });
-	const img = (user.image ?? []).find((i) => i.size === 'extralarge') ?? (user.image ?? []).at(-1);
+	const img =
+		(user.image ?? []).find((i) => i.size === 'extralarge') ??
+		(user.image ?? []).at(-1);
 	return {
 		name: user.name,
 		realname: user.realname ?? '',
@@ -32,17 +42,28 @@ export async function getProfile(name: string): Promise<Profile> {
 
 export const PLACEHOLDER = '2a96cbd8b46e442fc41c2b86b821562f';
 
-export async function api<T>(method: string, params: Record<string, string | number> = {}): Promise<T> {
+export async function api<T>(
+	method: string,
+	params: Record<string, string | number> = {}
+): Promise<T> {
 	const query = new URLSearchParams({ method });
 	for (const [k, v] of Object.entries(params)) query.set(k, String(v));
 	const res = await fetch(`/api/lastfm?${query}`);
-	if (res.status === 401) throw new Error('This site is not set up yet: the owner needs to add LASTFM_API_KEY on the server.');
+	if (res.status === 401)
+		throw new Error(
+			'This site is not set up yet: the owner needs to add LASTFM_API_KEY on the server.'
+		);
 	const data = (await res.json()) as T & { error?: number; message?: string };
-	if (data.error) throw new Error(data.message ?? `Last.fm error ${data.error}`);
+	if (data.error)
+		throw new Error(data.message ?? `Last.fm error ${data.error}`);
 	return data;
 }
 
-const SINGULAR: Record<TopType, string> = { albums: 'album', artists: 'artist', tracks: 'track' };
+const SINGULAR: Record<TopType, string> = {
+	albums: 'album',
+	artists: 'artist',
+	tracks: 'track'
+};
 
 function bestImage(images: RawItem['image']): string {
 	const found = (images ?? [])
@@ -52,13 +73,23 @@ function bestImage(images: RawItem['image']): string {
 	return found ? found['#text'] : '';
 }
 
-export async function getTop(type: TopType, period: string, limit: number, user: string): Promise<TopItem[]> {
+export async function getTop(
+	type: TopType,
+	period: string,
+	limit: number,
+	user: string
+): Promise<TopItem[]> {
 	const out: TopItem[] = [];
 	const perPage = Math.min(limit, 200);
 	let page = 1;
 	let totalPages = 1;
 	while (out.length < limit && page <= totalPages) {
-		const data = await api<Record<string, RawWrap>>(`user.gettop${type}`, { user, period, limit: perPage, page });
+		const data = await api<Record<string, RawWrap>>(`user.gettop${type}`, {
+			user,
+			period,
+			limit: perPage,
+			page
+		});
 		const wrap = data[`top${type}`];
 		totalPages = Number(wrap['@attr'].totalPages) || 1;
 		const list = (wrap[SINGULAR[type]] as RawItem[] | undefined) ?? [];
@@ -66,7 +97,10 @@ export async function getTop(type: TopType, period: string, limit: number, user:
 		for (const it of list) {
 			out.push({
 				name: it.name,
-				artist: type === 'artists' ? '' : (it.artist?.name ?? it.artist?.['#text'] ?? ''),
+				artist:
+					type === 'artists'
+						? ''
+						: (it.artist?.name ?? it.artist?.['#text'] ?? ''),
 				plays: Number(it.playcount) || 0,
 				dur: Number(it.duration) || 0,
 				img: bestImage(it.image),
@@ -78,14 +112,14 @@ export async function getTop(type: TopType, period: string, limit: number, user:
 	return out.slice(0, limit);
 }
 
-interface FetchOptions {
+type FetchOptions = {
 	user: string;
 	from?: number;
 	to?: number;
 	maxPages?: number;
 	signal?: { aborted: boolean };
 	onProgress?: (page: number, totalPages: number, total: number) => void;
-}
+};
 
 export async function fetchScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
 	const { user, from, to, maxPages = Infinity, signal, onProgress } = opts;
@@ -107,13 +141,25 @@ export async function fetchScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
 		}
 		const rt = data.recenttracks;
 		totalPages = Number(rt['@attr'].totalPages) || 1;
-		const tracks: RawRecentTrack[] = ([] as RawRecentTrack[]).concat(rt.track ?? []);
+		const tracks: RawRecentTrack[] = ([] as RawRecentTrack[]).concat(
+			rt.track ?? []
+		);
 		for (const t of tracks) {
 			const uts = Number(t.date?.uts);
 			if (t['@attr']?.nowplaying || !uts) continue;
-			out.push({ uts, artist: t.artist['#text'], album: t.album?.['#text'] ?? '', track: t.name, mbid: t.mbid ?? '' });
+			out.push({
+				uts,
+				artist: t.artist['#text'],
+				album: t.album?.['#text'] ?? '',
+				track: t.name,
+				mbid: t.mbid ?? ''
+			});
 		}
-		onProgress?.(page, Math.min(totalPages, maxPages), Number(rt['@attr'].total));
+		onProgress?.(
+			page,
+			Math.min(totalPages, maxPages),
+			Number(rt['@attr'].total)
+		);
 		page++;
 		await sleep(120);
 	}
@@ -122,7 +168,11 @@ export async function fetchScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
 
 const imageCache = new Map<string, string>();
 
-export async function findImage(type: TopType, name: string, artist: string): Promise<string> {
+export async function findImage(
+	type: TopType,
+	name: string,
+	artist: string
+): Promise<string> {
 	const key = `${type}|${name}|${artist}`;
 	const cached = imageCache.get(key);
 	if (cached !== undefined) return cached;
@@ -139,7 +189,11 @@ export async function findImage(type: TopType, name: string, artist: string): Pr
 }
 
 /** Fills in missing artwork for items, a few lookups at a time. */
-export async function fillImages(items: TopItem[], type: TopType, onProgress?: (done: number, total: number) => void): Promise<void> {
+export async function fillImages(
+	items: TopItem[],
+	type: TopType,
+	onProgress?: (done: number, total: number) => void
+): Promise<void> {
 	const todo = items.filter((i) => !i.img);
 	let next = 0;
 	let done = 0;

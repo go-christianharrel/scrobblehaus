@@ -1,7 +1,7 @@
 import { topCounts } from './util';
 import type { Scrobble } from './types';
 
-export interface Insights {
+export type Insights = {
 	hours: number[];
 	weekdays: number[];
 	best: { day: string; count: number };
@@ -11,7 +11,7 @@ export interface Insights {
 	topArtists: [string, number][];
 	topTracks: [string, number][];
 	onThisDay: { year: number; count: number; top: string }[];
-}
+};
 
 export const dayKey = (d: Date): string =>
 	`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -29,21 +29,25 @@ export function computeInsights(rows: Scrobble[]): Insights {
 	}
 
 	let best = { day: '-', count: 0 };
-	for (const [day, count] of perDay) if (count > best.count) best = { day, count };
+	for (const [day, count] of perDay)
+		if (count > best.count) best = { day, count };
 
 	let streak = 0;
 	let bestStreak = 0;
 	let prev: number | null = null;
 	for (const k of [...perDay.keys()].sort()) {
 		const t = new Date(`${k}T00:00:00`).getTime();
-		streak = prev !== null && Math.round((t - prev) / 86400000) === 1 ? streak + 1 : 1;
+		streak =
+			prev !== null && Math.round((t - prev) / 86400000) === 1 ? streak + 1 : 1;
 		bestStreak = Math.max(bestStreak, streak);
 		prev = t;
 	}
 
 	const newest = rows.length ? rows[0].uts : 0;
 	const oldest = rows.length ? rows[rows.length - 1].uts : 0;
-	const span = rows.length ? Math.max(1, Math.round((newest - oldest) / 86400) + 1) : 1;
+	const span = rows.length
+		? Math.max(1, Math.round((newest - oldest) / 86400) + 1)
+		: 1;
 
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
@@ -54,14 +58,22 @@ export function computeInsights(rows: Scrobble[]): Insights {
 	for (const d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
 		const day = dayKey(d);
 		const count = perDay.get(day) ?? 0;
-		heat.push({ day, count, level: count ? Math.min(4, Math.ceil((count / maxDay) * 4)) : 0 });
+		heat.push({
+			day,
+			count,
+			level: count ? Math.min(4, Math.ceil((count / maxDay) * 4)) : 0
+		});
 	}
 
 	const md = `${today.getMonth()}-${today.getDate()}`;
 	const byYear = new Map<number, Scrobble[]>();
 	for (const r of rows) {
 		const d = new Date(r.uts * 1000);
-		if (`${d.getMonth()}-${d.getDate()}` !== md || d.getFullYear() === today.getFullYear()) continue;
+		if (
+			`${d.getMonth()}-${d.getDate()}` !== md ||
+			d.getFullYear() === today.getFullYear()
+		)
+			continue;
 		const list = byYear.get(d.getFullYear()) ?? [];
 		list.push(r);
 		byYear.set(d.getFullYear(), list);
