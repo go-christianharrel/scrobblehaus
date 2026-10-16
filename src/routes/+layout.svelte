@@ -9,6 +9,8 @@
 	import { onMount, tick } from 'svelte';
 	import type { LayoutProps } from './$types';
 
+	const REPO_URL = 'https://github.com/go-christianharrel/scrobblehaus';
+
 	let { data, children }: LayoutProps = $props();
 	let draft = $state(settings.username);
 	let avatarOk = $state(true);
@@ -153,6 +155,15 @@
 	<aside class="noprint">
 		<div class="top">
 			<a class="logo" href="/">Scrobble<span>haus</span></a>
+			<a
+				class="gh-icon"
+				href={REPO_URL}
+				target="_blank"
+				rel="noopener"
+				aria-label="View source on GitHub"
+			>
+				<Icon name="github" size={18} />
+			</a>
 			<button
 				class="theme"
 				onclick={toggleTheme}
@@ -289,7 +300,19 @@
 			{/each}
 		</nav>
 
-		<p class="credit">Powered by Last.fm data</p>
+		<div class="credit">
+			<a
+				class="gh"
+				href={REPO_URL}
+				target="_blank"
+				rel="noopener"
+				title="Free and open source. Star the repo to support it."
+			>
+				<Icon name="github" size={16} />
+				<span>Star on GitHub</span>
+			</a>
+			<p>Powered by Last.fm data · MIT</p>
+		</div>
 	</aside>
 
 	<main>
@@ -366,6 +389,40 @@
 		margin: auto 6px 0;
 		font-size: 12px;
 		color: var(--muted);
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+	.credit p {
+		margin: 0;
+	}
+	.gh {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		width: fit-content;
+		padding: 7px 12px;
+		border-radius: 999px;
+		border: 1px solid var(--line2);
+		background: var(--panel);
+		color: var(--text);
+		font-weight: 600;
+		text-decoration: none;
+		transition:
+			background 0.15s,
+			border-color 0.15s;
+	}
+	.gh-icon {
+		display: none;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		color: var(--muted);
+	}
+	.gh:hover {
+		background: var(--hover);
+		border-color: var(--accent2);
 	}
 	.top {
 		display: flex;
@@ -595,6 +652,12 @@
 			gap: 10px;
 			padding: 10px 14px;
 			background: var(--aside-m);
+		}
+		.credit {
+			display: none;
+		}
+		.gh-icon {
+			display: grid;
 		}
 		.menu {
 			display: grid;
