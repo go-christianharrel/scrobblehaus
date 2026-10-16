@@ -5,7 +5,7 @@
 	import { fmt } from './util';
 	import type { RawRecent, RawRecentTrack } from './types';
 
-	interface Now {
+	type Now = {
 		name: string;
 		artist: string;
 		album: string;
@@ -13,7 +13,7 @@
 		live: boolean;
 		when: string;
 		mine: number;
-	}
+	};
 
 	let now = $state<Now | null>(null);
 	let error = $state('');

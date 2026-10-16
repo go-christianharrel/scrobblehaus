@@ -28,7 +28,7 @@ export async function getProfile(name: string): Promise<Profile> {
 		tracks: Number(user.track_count),
 		since: new Date(Number(user.registered.unixtime) * 1000).getFullYear()
 	};
-}
+};
 
 export const PLACEHOLDER = '2a96cbd8b46e442fc41c2b86b821562f';
 
@@ -78,14 +78,14 @@ export async function getTop(type: TopType, period: string, limit: number, user:
 	return out.slice(0, limit);
 }
 
-interface FetchOptions {
+type FetchOptions = {
 	user: string;
 	from?: number;
 	to?: number;
 	maxPages?: number;
 	signal?: { aborted: boolean };
 	onProgress?: (page: number, totalPages: number, total: number) => void;
-}
+};
 
 export async function fetchScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
 	const { user, from, to, maxPages = Infinity, signal, onProgress } = opts;

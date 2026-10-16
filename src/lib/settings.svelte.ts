@@ -19,7 +19,7 @@ const write = (key: string, value: string): void => {
 	}
 };
 
-export interface Profile {
+export type Profile = {
 	name: string;
 	realname: string;
 	avatar: string;
@@ -28,7 +28,7 @@ export interface Profile {
 	albums: number;
 	tracks: number;
 	since: number;
-}
+};
 
 const readProfile = (name: string): Profile | null => {
 	try {

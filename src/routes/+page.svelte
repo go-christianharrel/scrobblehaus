@@ -8,12 +8,12 @@
 	import { fmt } from '#lib/util';
 	import type { RawRecent, RawRecentTrack } from '#lib/types';
 
-	interface Recent {
+	type Recent = {
 		name: string;
 		artist: string;
 		art: string;
 		live: boolean;
-	}
+	};
 
 	let recent = $state<Recent[]>([]);
 

@@ -5,12 +5,12 @@
 	import type { TopType } from '#lib/types';
 	import { download, fmt, stamp, toCsv } from '#lib/util';
 
-	interface Loved {
+	type Loved = {
 		lovedtracks: {
 			track?: { name: string; url: string; artist: { name: string }; date?: { uts: string } }[];
 			'@attr': { totalPages: string };
 		};
-	}
+	};
 
 	let from = $state('');
 	let to = $state('');

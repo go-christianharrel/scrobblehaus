@@ -10,12 +10,12 @@
 	const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 	const HOURS = Array.from({ length: 24 }, (_, i) => String(i));
 
-	interface Profile {
+	type Profile = {
 		name: string;
 		playcount: number;
 		since: number;
 		artists: string;
-	}
+	};
 
 	let depth = $state('2000');
 	let status = $state('');

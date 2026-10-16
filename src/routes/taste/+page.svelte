@@ -7,7 +7,7 @@
 	import { PERIODS } from '#lib/types';
 	import { clamp, fmt, hashHue } from '#lib/util';
 
-	interface Result {
+	type Result = {
 		user: string;
 		score: number;
 		verdict: string;
@@ -17,7 +17,7 @@
 		type: MusicType;
 		top: Match[];
 		categories: Match[];
-	}
+	};
 
 	let period = $state('overall');
 	let count = $state(50);

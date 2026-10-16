@@ -1,7 +1,7 @@
 import { fmt, hashHue } from './util';
 import type { TopItem } from './types';
 
-export interface CollageOptions {
+export type CollageOptions = {
 	cols: number;
 	rows: number;
 	tile: number;
@@ -9,7 +9,7 @@ export interface CollageOptions {
 	background: string;
 	labels: boolean;
 	plays: boolean;
-}
+};
 
 export function loadImage(src: string): Promise<HTMLImageElement | null> {
 	return new Promise((resolve) => {

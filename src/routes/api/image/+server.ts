@@ -1,21 +1,21 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-interface DeezerAlbum {
+type DeezerAlbum = {
 	cover_xl?: string;
 	cover_big?: string;
-}
-interface DeezerHit extends DeezerAlbum {
+};
+type DeezerHit = DeezerAlbum & {
 	picture_xl?: string;
 	picture_big?: string;
 	album?: DeezerAlbum;
-}
-interface DeezerResponse {
+};
+type DeezerResponse = {
 	data?: DeezerHit[];
-}
-interface ItunesResponse {
+};
+type ItunesResponse = {
 	results?: { artworkUrl100?: string }[];
-}
+};
 
 const BLANK_DEEZER = 'd41d8cd98f00b204e9800998ecf8427e';
 const MAX_CACHE = 5000;

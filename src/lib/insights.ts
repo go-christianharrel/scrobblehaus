@@ -1,7 +1,7 @@
 import { topCounts } from './util';
 import type { Scrobble } from './types';
 
-export interface Insights {
+export type Insights = {
 	hours: number[];
 	weekdays: number[];
 	best: { day: string; count: number };
@@ -11,7 +11,7 @@ export interface Insights {
 	topArtists: [string, number][];
 	topTracks: [string, number][];
 	onThisDay: { year: number; count: number; top: string }[];
-}
+};
 
 export const dayKey = (d: Date): string =>
 	`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

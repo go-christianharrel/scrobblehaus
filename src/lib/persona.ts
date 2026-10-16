@@ -1,31 +1,31 @@
-export interface Tag {
+export type Tag = {
 	name: string;
 	count: number;
-}
+};
 
 /** Each axis runs 0..1. */
-export interface Vibe {
+export type Vibe = {
 	energy: number;
 	dark: number;
 	mainstream: number;
 	nostalgia: number;
 	experimental: number;
-}
+};
 
 export type Category = 'Anime' | 'Movie' | 'Real life';
 
-export interface Character {
+export type Character = {
 	name: string;
 	from: string;
 	category: Category;
 	vibe: Vibe;
 	blurb: string;
-}
+};
 
-export interface Match {
+export type Match = {
 	character: Character;
 	percent: number;
-}
+};
 
 const v = (energy: number, dark: number, mainstream: number, nostalgia: number, experimental: number): Vibe => ({
 	energy,
@@ -142,7 +142,7 @@ export function describeVibe(vibe: Vibe): string[] {
 		.map(({ k }) => LABELS[k][vibe[k] >= 0.5 ? 1 : 0]);
 }
 
-export interface TypeAxis {
+export type TypeAxis = {
 	left: string;
 	right: string;
 	/** 0..1, how far toward `right`. */
@@ -150,14 +150,14 @@ export interface TypeAxis {
 	letter: string;
 	/** Strength (50-100) of the winning side. */
 	percent: number;
-}
+};
 
-export interface MusicType {
+export type MusicType = {
 	code: string;
 	name: string;
 	tagline: string;
 	axes: TypeAxis[];
-}
+};
 
 const TYPES: Record<string, [string, string]> = {
 	EDMN: ['The Arena Rebel', 'Big-stage rock and metal anthems, played loud and proud.'],

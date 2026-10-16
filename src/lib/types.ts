@@ -1,9 +1,9 @@
 export type TopType = 'albums' | 'artists' | 'tracks';
 
-export interface Period {
+export type Period = {
 	value: string;
 	label: string;
-}
+};
 
 export const PERIODS: Period[] = [
 	{ value: '7day', label: 'Last 7 days' },
@@ -17,42 +17,42 @@ export const PERIODS: Period[] = [
 export const periodLabel = (value: string): string =>
 	PERIODS.find((p) => p.value === value)?.label ?? value;
 
-export interface TopItem {
+export type TopItem = {
 	name: string;
 	artist: string;
 	plays: number;
 	dur: number;
 	img: string;
 	url: string;
-}
+};
 
-export interface Scrobble {
+export type Scrobble = {
 	uts: number;
 	artist: string;
 	album: string;
 	track: string;
 	mbid: string;
-}
+};
 
-export interface RawImage {
+export type RawImage = {
 	'#text': string;
-}
+};
 
-export interface RawItem {
+export type RawItem = {
 	name: string;
 	playcount: string;
 	duration?: string;
 	url?: string;
 	image?: RawImage[];
 	artist?: { name?: string; '#text'?: string };
-}
+};
 
-export interface RawWrap {
+export type RawWrap = {
 	'@attr': { totalPages: string; total: string };
 	[key: string]: unknown;
-}
+};
 
-export interface RawRecentTrack {
+export type RawRecentTrack = {
 	name: string;
 	mbid?: string;
 	artist: { '#text': string };
@@ -60,11 +60,11 @@ export interface RawRecentTrack {
 	image?: RawImage[];
 	date?: { uts: string };
 	'@attr'?: { nowplaying?: string };
-}
+};
 
-export interface RawRecent {
+export type RawRecent = {
 	recenttracks: {
 		track?: RawRecentTrack | RawRecentTrack[];
 		'@attr': { totalPages: string; total: string };
 	};
-}
+};
