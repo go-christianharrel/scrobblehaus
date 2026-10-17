@@ -7,7 +7,7 @@
 </script>
 
 {#if tool}
-	<header class="ph noprint" style="--h: {tool.hue}">
+	<header class="ph" style="--h: {tool.hue}">
 		<span class="ico"><Icon name={tool.icon} size={24} /></span>
 		<div>
 			<h1>{tool.label}</h1>
