@@ -245,11 +245,12 @@
 		box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
 	}
 	.meta {
-		min-width: 200px;
-		flex: 1;
+		min-width: 0;
+		flex: 1 1 320px;
 	}
 	h2 {
 		font-size: clamp(24px, 3.4vw, 40px);
+		overflow-wrap: anywhere;
 		line-height: 1.08;
 		margin: 12px 0 6px;
 	}
