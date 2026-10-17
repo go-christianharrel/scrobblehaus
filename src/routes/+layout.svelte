@@ -59,6 +59,45 @@
 			}))
 		}).replace(/</g, '\\u003c')
 	);
+	const keywords = $derived(
+		(tool ? tool.keywords : TOOLS.flatMap((t) => t.keywords.slice(0, 2))).join(
+			', '
+		)
+	);
+	const graphLd = $derived(
+		JSON.stringify(
+			tool
+				? {
+						'@context': 'https://schema.org',
+						'@type': 'BreadcrumbList',
+						itemListElement: [
+							{
+								'@type': 'ListItem',
+								position: 1,
+								name: 'Scrobblehaus',
+								item: `${page.url.origin}/`
+							},
+							{
+								'@type': 'ListItem',
+								position: 2,
+								name: tool.label,
+								item: canonical
+							}
+						]
+					}
+				: {
+						'@context': 'https://schema.org',
+						'@type': 'ItemList',
+						name: 'Free Last.fm tools',
+						itemListElement: TOOLS.map((t, i) => ({
+							'@type': 'ListItem',
+							position: i + 1,
+							name: t.seoTitle,
+							url: `${page.url.origin}${t.href}`
+						}))
+					}
+		).replace(/</g, '\\u003c')
+	);
 	const jsonLd = $derived(
 		JSON.stringify({
 			'@context': 'https://schema.org',
@@ -138,8 +177,15 @@
 		content="g2MVCqPgEEcdasM2OwFdYNZdckgQoW4AOr2Wwoxs0kk"
 	/>
 	<meta name="description" content={seo.desc} />
+	<meta name="keywords" content={keywords} />
+	<meta
+		name="robots"
+		content="index, follow, max-image-preview:large, max-snippet:-1"
+	/>
 	<link rel="canonical" href={canonical} />
 	<meta property="og:site_name" content="Scrobblehaus" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:image" content="{page.url.origin}/icon-192.png" />
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content={seo.title} />
 	<meta property="og:description" content={seo.desc} />
@@ -147,7 +193,9 @@
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:title" content={seo.title} />
 	<meta name="twitter:description" content={seo.desc} />
+	<meta name="twitter:image" content="{page.url.origin}/icon-192.png" />
 	{@html `<script type="application/ld+json">${jsonLd}</script>`}
+	{@html `<script type="application/ld+json">${graphLd}</script>`}
 	{#if tool}{@html `<script type="application/ld+json">${faqLd}</script>`}{/if}
 </svelte:head>
 
