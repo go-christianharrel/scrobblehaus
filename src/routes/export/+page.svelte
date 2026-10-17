@@ -8,8 +8,17 @@
 		exportLoved,
 		exportScrobbles,
 		exportTop,
+		rerunExport,
 		type ExportFormat
 	} from '#lib/exporter.svelte';
+	import {
+		clearExports,
+		exportHistory,
+		removeExport,
+		type ExportRecord
+	} from '#lib/exportHistory.svelte';
+	import { settings } from '#lib/settings.svelte';
+	import { fmt } from '#lib/util';
 
 	let from = $state('');
 	let to = $state('');
@@ -19,6 +28,28 @@
 	];
 
 	let format = $state<ExportFormat>('csv');
+
+	const mine = $derived(
+		exportHistory.records.filter(
+			(r) => r.user.toLowerCase() === settings.username.trim().toLowerCase()
+		)
+	);
+
+	function describe(r: ExportRecord): string {
+		const parts = [new Date(r.at).toLocaleString()];
+		if (r.job.kind === 'scrobbles') {
+			parts.push(r.job.format.toUpperCase());
+			parts.push(
+				r.job.from || r.job.to
+					? `${r.job.from || 'start'} to ${r.job.to || 'today'}`
+					: 'all time'
+			);
+		} else {
+			parts.push('CSV');
+		}
+		parts.push(`${fmt(r.count)} rows`);
+		return parts.join(' · ');
+	}
 
 	onMount(() => {
 		exportJob.unseen = false;
@@ -66,3 +97,65 @@
 		>
 	</div>
 </div>
+
+{#if mine.length}
+	<div class="card">
+		<div class="head">
+			<b>Past exports</b>
+			<button onclick={() => clearExports(settings.username)}>Clear</button>
+		</div>
+		<ul class="past">
+			{#each mine as r (r.id)}
+				<li>
+					<div>
+						<b>{r.label}</b>
+						<span class="muted">{describe(r)}</span>
+					</div>
+					<button onclick={() => rerunExport(r)} disabled={exportJob.busy}
+						>Download again</button
+					>
+					<button onclick={() => removeExport(r.id)}>Remove</button>
+				</li>
+			{/each}
+		</ul>
+	</div>
+{/if}
+
+<style>
+	.head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.head button {
+		padding: 4px 12px;
+		font-size: 12px;
+	}
+	.past {
+		margin: 12px 0 0;
+		padding: 0;
+		list-style: none;
+		display: grid;
+		gap: 8px;
+	}
+	.past li {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+		padding: 10px 12px;
+		border: 1px solid var(--line);
+		border-radius: 12px;
+	}
+	.past li div {
+		display: grid;
+		gap: 2px;
+		margin-right: auto;
+		min-width: 0;
+		font-size: 13px;
+	}
+	.past button {
+		padding: 4px 12px;
+		font-size: 12px;
+	}
+</style>
