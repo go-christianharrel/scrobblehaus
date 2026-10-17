@@ -68,10 +68,7 @@
 				album: t.album?.['#text'] ?? '',
 				art,
 				live,
-				when:
-					!live && t.date
-						? new Date(Number(t.date.uts) * 1000).toLocaleString()
-						: '',
+				when: !live && t.date ? playedAt(Number(t.date.uts)) : '',
 				mine: details?.mine ?? 0,
 				details,
 				history,
@@ -85,6 +82,29 @@
 	const duration = (ms: number): string => {
 		const total = Math.round(ms / 1000);
 		return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+	};
+
+	const timeAgo = (date: Date): string => {
+		const mins = Math.floor((Date.now() - date.getTime()) / 60000);
+		if (mins < 1) return 'just now';
+		if (mins < 60) return `${mins}m ago`;
+		if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
+		return `${Math.floor(mins / 1440)}d ago`;
+	};
+
+	const playedAt = (uts: number): string => {
+		const date = new Date(uts * 1000);
+		const day = date.toLocaleDateString(undefined, {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric'
+		});
+		const time = date.toLocaleTimeString(undefined, {
+			hour: 'numeric',
+			minute: '2-digit'
+		});
+		const ago = timeAgo(date);
+		return `${day} at ${time} (${ago})`;
 	};
 
 	const monthYear = (uts: number): string =>
