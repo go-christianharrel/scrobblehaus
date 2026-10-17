@@ -11,6 +11,7 @@
 		type TopItem,
 		type TopType
 	} from '#lib/types';
+	import { drawReceipt } from '#lib/receiptImage';
 	import { clamp, fmt } from '#lib/util';
 
 	let type = $state<TopType>('tracks');
@@ -25,6 +26,8 @@
 	let status = $state('');
 	let failed = $state(false);
 	let busy = $state(false);
+
+	let canvas: HTMLCanvasElement;
 
 	const total = $derived(items.reduce((a, i) => a + i.plays, 0));
 
@@ -49,6 +52,24 @@
 		} finally {
 			busy = false;
 		}
+	}
+
+	function savePng(): void {
+		drawReceipt(canvas, {
+			title: `TOP ${shownType.toUpperCase()} — ${periodLabel(shownPeriod).toUpperCase()}`,
+			subtitle: `ORDER #${order} FOR ${user.toUpperCase()}`,
+			printedAt,
+			user,
+			items
+		});
+		canvas.toBlob((blob) => {
+			if (!blob) return;
+			const a = document.createElement('a');
+			a.href = URL.createObjectURL(blob);
+			a.download = `lastfm-receipt-${shownType}-${shownPeriod}.png`;
+			a.click();
+			setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+		});
 	}
 
 	onMount(() => {
@@ -78,12 +99,12 @@
 	<button class="primary" onclick={make} disabled={busy}
 		>Print me a receipt</button
 	>
-	<button onclick={() => window.print()} disabled={!items.length}
-		>Print / Save PDF</button
-	>
+	<button onclick={savePng} disabled={!items.length}>Print</button>
 </div>
 
 <div class="status" class:err={failed} class:busy>{status}</div>
+
+<canvas bind:this={canvas} hidden></canvas>
 
 {#if items.length}
 	<div class="receipt">
@@ -170,11 +191,5 @@
 			#111 9px 12px,
 			#fff 12px 14px
 		);
-	}
-	@media print {
-		.receipt {
-			filter: none;
-			animation: none;
-		}
 	}
 </style>
