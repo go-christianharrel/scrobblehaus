@@ -258,6 +258,7 @@
 		align-items: center;
 		gap: 8px;
 		background: var(--grad);
+		background-origin: border-box;
 		border-radius: 999px;
 		padding: 4px 14px;
 		font-size: 12px;
@@ -322,6 +323,7 @@
 	}
 	.tags .loved {
 		background: var(--grad);
+		background-origin: border-box;
 		text-transform: none;
 	}
 	.tiles {

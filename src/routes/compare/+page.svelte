@@ -278,6 +278,7 @@
 		font: 800 22px var(--display);
 		color: #fff;
 		background: var(--grad);
+		background-origin: border-box;
 		box-shadow: 0 8px 24px rgba(255, 45, 85, 0.35);
 	}
 	.av.alt {
@@ -315,6 +316,7 @@
 	.dot.a,
 	.fill.a {
 		background: var(--grad);
+		background-origin: border-box;
 	}
 	.dot.b,
 	.fill.b {
