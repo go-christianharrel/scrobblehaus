@@ -121,49 +121,65 @@ type FetchOptions = {
 	onProgress?: (page: number, totalPages: number, total: number) => void;
 };
 
-export async function fetchScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
-	const { user, from, to, maxPages = Infinity, signal, onProgress } = opts;
+const PAGE_CONCURRENCY = 4;
+
+async function fetchPage(
+	params: Record<string, string | number>
+): Promise<RawRecent['recenttracks']> {
+	for (let attempt = 0; ; attempt++) {
+		try {
+			return (await api<RawRecent>('user.getrecenttracks', params))
+				.recenttracks;
+		} catch (e) {
+			if (attempt >= 3) throw e;
+			await sleep(1500 * (attempt + 1));
+		}
+	}
+}
+
+function toScrobbles(page: RawRecent['recenttracks']): Scrobble[] {
+	const tracks: RawRecentTrack[] = ([] as RawRecentTrack[]).concat(
+		page.track ?? []
+	);
 	const out: Scrobble[] = [];
-	let page = 1;
-	let totalPages = 1;
-	while (page <= totalPages && page <= maxPages && !signal?.aborted) {
-		const params: Record<string, string | number> = { user, limit: 200, page };
-		if (from) params.from = from;
-		if (to) params.to = to;
-		let data: RawRecent | undefined;
-		for (let attempt = 0; !data; attempt++) {
-			try {
-				data = await api<RawRecent>('user.getrecenttracks', params);
-			} catch (e) {
-				if (attempt >= 3) throw e;
-				await sleep(1500 * (attempt + 1));
-			}
-		}
-		const rt = data.recenttracks;
-		totalPages = Number(rt['@attr'].totalPages) || 1;
-		const tracks: RawRecentTrack[] = ([] as RawRecentTrack[]).concat(
-			rt.track ?? []
-		);
-		for (const t of tracks) {
-			const uts = Number(t.date?.uts);
-			if (t['@attr']?.nowplaying || !uts) continue;
-			out.push({
-				uts,
-				artist: t.artist['#text'],
-				album: t.album?.['#text'] ?? '',
-				track: t.name,
-				mbid: t.mbid ?? ''
-			});
-		}
-		onProgress?.(
-			page,
-			Math.min(totalPages, maxPages),
-			Number(rt['@attr'].total)
-		);
-		page++;
-		await sleep(120);
+	for (const t of tracks) {
+		const uts = Number(t.date?.uts);
+		if (t['@attr']?.nowplaying || !uts) continue;
+		out.push({
+			uts,
+			artist: t.artist['#text'],
+			album: t.album?.['#text'] ?? '',
+			track: t.name,
+			mbid: t.mbid ?? ''
+		});
 	}
 	return out;
+}
+
+/** Page 1 sets the page count, then the rest load a few at a time. */
+export async function fetchScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
+	const { user, from, to, maxPages = Infinity, signal, onProgress } = opts;
+	const params: Record<string, string | number> = { user, limit: 200 };
+	if (from) params.from = from;
+	if (to) params.to = to;
+
+	const first = await fetchPage({ ...params, page: 1 });
+	const total = Number(first['@attr'].total);
+	const totalPages = Math.min(Number(first['@attr'].totalPages) || 1, maxPages);
+	const pages: Scrobble[][] = [toScrobbles(first)];
+	let done = 1;
+	let next = 2;
+	onProgress?.(done, totalPages, total);
+
+	const worker = async (): Promise<void> => {
+		while (next <= totalPages && !signal?.aborted) {
+			const page = next++;
+			pages[page - 1] = toScrobbles(await fetchPage({ ...params, page }));
+			onProgress?.(++done, totalPages, total);
+		}
+	};
+	await Promise.all(Array.from({ length: PAGE_CONCURRENCY }, worker));
+	return pages.flat();
 }
 
 const imageCache = new Map<string, string>();
