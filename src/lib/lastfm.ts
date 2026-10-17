@@ -125,7 +125,13 @@ export type FetchOptions = {
 	maxPages?: number;
 	signal?: { aborted: boolean };
 	onProgress?: (page: number, totalPages: number, total: number) => void;
+	/** Called with the newest scrobbles loaded so far, with no gaps. */
+	onPartial?: (rows: Scrobble[]) => void;
 };
+
+/** First partial after this many pages, then one every PARTIAL_STEP pages. */
+const PARTIAL_FIRST = 3;
+const PARTIAL_STEP = 10;
 
 const PAGE_CONCURRENCY = 4;
 
@@ -164,7 +170,15 @@ function toScrobbles(page: RawRecent['recenttracks']): Scrobble[] {
 
 /** Page 1 sets the page count, then the rest load a few at a time. */
 export async function fetchScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
-	const { user, from, to, maxPages = Infinity, signal, onProgress } = opts;
+	const {
+		user,
+		from,
+		to,
+		maxPages = Infinity,
+		signal,
+		onProgress,
+		onPartial
+	} = opts;
 	const params: Record<string, string | number> = { user, limit: 200 };
 	if (from) params.from = from;
 	if (to) params.to = to;
@@ -177,11 +191,20 @@ export async function fetchScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
 	let next = 2;
 	onProgress?.(done, totalPages, total);
 
+	let emitAt = PARTIAL_FIRST;
+	const emitPartial = (): void => {
+		let ready = 0;
+		while (ready < totalPages && pages[ready]) ready++;
+		if (ready < emitAt || ready >= totalPages) return;
+		emitAt = ready + PARTIAL_STEP;
+		onPartial?.(pages.slice(0, ready).flat());
+	};
 	const worker = async (): Promise<void> => {
 		while (next <= totalPages && !signal?.aborted) {
 			const page = next++;
 			pages[page - 1] = toScrobbles(await fetchPage({ ...params, page }));
 			onProgress?.(++done, totalPages, total);
+			emitPartial();
 		}
 	};
 	await Promise.all(Array.from({ length: PAGE_CONCURRENCY }, worker));
