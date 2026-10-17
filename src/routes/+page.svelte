@@ -140,7 +140,41 @@
 	{/each}
 </div>
 
+<section class="about">
+	<h2>Free Last.fm tools</h2>
+	<p class="muted">
+		Scrobblehaus is a free set of Last.fm tools: make a Last.fm collage, see
+		your top artists, albums and tracks, print a Last.fm receipt, check how
+		mainstream your music taste is, explore your listening stats, compare with a
+		friend and export your scrobbles to CSV or JSON. No login, just your
+		username.
+	</p>
+	<ul>
+		{#each TOOLS as tool (tool.href)}
+			<li><a href={tool.href}>{tool.seoTitle.split(' | ')[0]}</a></li>
+		{/each}
+	</ul>
+</section>
+
 <style>
+	.about {
+		margin-top: 40px;
+		max-width: 680px;
+	}
+	.about h2 {
+		font-size: 18px;
+		margin: 0 0 6px;
+	}
+	.about p {
+		font-size: 14px;
+		line-height: 1.55;
+	}
+	.about ul {
+		margin: 12px 0 0;
+		padding-left: 18px;
+		font-size: 14px;
+		line-height: 1.8;
+	}
 	.eyebrow-skel {
 		width: 120px;
 		height: 14px;
