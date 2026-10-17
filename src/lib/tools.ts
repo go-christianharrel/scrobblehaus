@@ -22,7 +22,7 @@ export const TOOLS: Tool[] = [
 		label: 'Collage',
 		icon: 'collage',
 		hue: 350,
-		blurb: 'Album, artist and track grids with PNG download and print.',
+		blurb: 'Album, artist and track grids with PNG download.',
 		seoTitle: 'Last.fm Collage Maker – Top Albums Grid | Scrobblehaus',
 		seoDesc:
 			'Free Last.fm collage maker. Turn your top albums, artists or tracks into a 3x3, 4x4 or 5x5 album grid for any period and download it as a PNG. No login.',
@@ -104,7 +104,7 @@ export const TOOLS: Tool[] = [
 		blurb: 'Your listening history, styled as a receipt.',
 		seoTitle: 'Last.fm Receipt – Receiptify Alternative | Scrobblehaus',
 		seoDesc:
-			'Make a Last.fm receipt of your top tracks and artists. A free Receiptify alternative: a receipt-style page of your listening you can print or save as PDF.',
+			'Make a Last.fm receipt of your top tracks and artists. A free Receiptify alternative: a receipt-style page of your listening you can save as an image.',
 		keywords: [
 			'lastfm receipt',
 			'last.fm receipt generator',
@@ -122,7 +122,7 @@ export const TOOLS: Tool[] = [
 			],
 			[
 				'Can I save my Last.fm receipt?',
-				'Yes. Generate the receipt, then print it or save it as a PDF.'
+				'Yes. Generate the receipt, then download it as a PNG image.'
 			],
 			[
 				'What is a Last.fm receipt?',

@@ -2,6 +2,7 @@
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
+	import { saveElementAsPng } from '#lib/saveImage';
 	import { api } from '#lib/lastfm';
 	import { computeInsights, type Insights } from '#lib/insights';
 	import { session, settings } from '#lib/settings.svelte';
@@ -122,6 +123,12 @@
 
 	const peak = (values: number[]): number => Math.max(1, ...values);
 
+	let shot = $state<HTMLElement>();
+
+	function printImage(): void {
+		if (shot) void saveElementAsPng(shot, 'lastfm-insights.png');
+	}
+
 	onMount(() => {
 		if (settings.username) void load();
 	});
@@ -140,114 +147,116 @@
 		>Stop &amp; analyse so far</button
 	>
 	<button onclick={useExported}>Use exported data</button>
-	<button onclick={() => window.print()} disabled={!data}>Print</button>
+	<button onclick={printImage} disabled={!data}>Print</button>
 </div>
 <div class="status" class:err={failed} class:busy>{status}</div>
 
 {#if data && profile}
-	<div class="printtitle">{profile.name} — Listening insights</div>
-	<div class="stats">
-		<div class="stat">
-			<b>{fmt(profile.playcount)}</b><span class="muted">Total scrobbles</span>
-		</div>
-		<div class="stat">
-			<b>{profile.since}</b><span class="muted">Member since</span>
-		</div>
-		<div class="stat">
-			<b>{profile.artists}</b><span class="muted">Artists</span>
-		</div>
-		<div class="stat">
-			<b>{fmt(sampleSize)}</b><span class="muted">Scrobbles analysed</span>
-		</div>
-		<div class="stat">
-			<b>{data.perDayAvg.toFixed(1)}</b><span class="muted"
-				>Avg per day (sample)</span
-			>
-		</div>
-		<div class="stat">
-			<b>{data.best.count || '-'}</b><span class="muted"
-				>Busiest day · {data.best.day}</span
-			>
-		</div>
-		<div class="stat">
-			<b>{data.bestStreak} days</b><span class="muted"
-				>Longest streak (sample)</span
-			>
-		</div>
-	</div>
-
-	<div class="cols">
-		<div class="card">
-			<b>By hour of day</b>
-			<div class="bars">
-				{#each data.hours as v, i (i)}<div
-						style="height: {((v / peak(data.hours)) * 100).toFixed(1)}%"
-						title="{i}: {fmt(v)}"
-					></div>{/each}
-			</div>
-			<div class="axis">
-				{#each HOURS as h, i (i)}<span>{i % 3 ? '' : h}</span>{/each}
-			</div>
-		</div>
-		<div class="card">
-			<b>By weekday</b>
-			<div class="bars">
-				{#each data.weekdays as v, i (i)}<div
-						style="height: {((v / peak(data.weekdays)) * 100).toFixed(1)}%"
-						title="{DAYS[i]}: {fmt(v)}"
-					></div>{/each}
-			</div>
-			<div class="axis">
-				{#each DAYS as d (d)}<span>{d}</span>{/each}
-			</div>
-		</div>
-	</div>
-
-	<div class="card">
-		<b>Last 12 months</b>
-		<div class="heat" style="margin-top: 10px">
-			{#each data.heat as h (h.day)}<i
-					class={h.level ? `l${h.level}` : ''}
-					title="{h.day}: {h.count}"
-				></i>{/each}
-		</div>
-	</div>
-
-	{#if data.onThisDay.length}
-		<div class="card">
-			<b>On this day</b>
-			<table>
-				<tbody
-					>{#each data.onThisDay as o (o.year)}<tr
-							><td>{o.year}</td><td>{o.count} scrobbles</td><td class="muted"
-								>{o.top}</td
-							></tr
-						>{/each}</tbody
+	<div bind:this={shot}>
+		<div class="stats">
+			<div class="stat">
+				<b>{fmt(profile.playcount)}</b><span class="muted">Total scrobbles</span
 				>
-			</table>
+			</div>
+			<div class="stat">
+				<b>{profile.since}</b><span class="muted">Member since</span>
+			</div>
+			<div class="stat">
+				<b>{profile.artists}</b><span class="muted">Artists</span>
+			</div>
+			<div class="stat">
+				<b>{fmt(sampleSize)}</b><span class="muted">Scrobbles analysed</span>
+			</div>
+			<div class="stat">
+				<b>{data.perDayAvg.toFixed(1)}</b><span class="muted"
+					>Avg per day (sample)</span
+				>
+			</div>
+			<div class="stat">
+				<b>{data.best.count || '-'}</b><span class="muted"
+					>Busiest day · {data.best.day}</span
+				>
+			</div>
+			<div class="stat">
+				<b>{data.bestStreak} days</b><span class="muted"
+					>Longest streak (sample)</span
+				>
+			</div>
 		</div>
-	{/if}
 
-	<div class="cols">
-		<div class="card">
-			<b>Top artists in sample</b>
-			<table>
-				<tbody
-					>{#each data.topArtists as [k, v] (k)}<tr
-							><td>{k}</td><td class="num">{fmt(v)}</td></tr
-						>{/each}</tbody
-				>
-			</table>
+		<div class="cols">
+			<div class="card">
+				<b>By hour of day</b>
+				<div class="bars">
+					{#each data.hours as v, i (i)}<div
+							style="height: {((v / peak(data.hours)) * 100).toFixed(1)}%"
+							title="{i}: {fmt(v)}"
+						></div>{/each}
+				</div>
+				<div class="axis">
+					{#each HOURS as h, i (i)}<span>{i % 3 ? '' : h}</span>{/each}
+				</div>
+			</div>
+			<div class="card">
+				<b>By weekday</b>
+				<div class="bars">
+					{#each data.weekdays as v, i (i)}<div
+							style="height: {((v / peak(data.weekdays)) * 100).toFixed(1)}%"
+							title="{DAYS[i]}: {fmt(v)}"
+						></div>{/each}
+				</div>
+				<div class="axis">
+					{#each DAYS as d (d)}<span>{d}</span>{/each}
+				</div>
+			</div>
 		</div>
+
 		<div class="card">
-			<b>Top tracks in sample</b>
-			<table>
-				<tbody
-					>{#each data.topTracks as [k, v] (k)}<tr
-							><td>{k}</td><td class="num">{fmt(v)}</td></tr
-						>{/each}</tbody
-				>
-			</table>
+			<b>Last 12 months</b>
+			<div class="heat" style="margin-top: 10px">
+				{#each data.heat as h (h.day)}<i
+						class={h.level ? `l${h.level}` : ''}
+						title="{h.day}: {h.count}"
+					></i>{/each}
+			</div>
+		</div>
+
+		{#if data.onThisDay.length}
+			<div class="card">
+				<b>On this day</b>
+				<table>
+					<tbody
+						>{#each data.onThisDay as o (o.year)}<tr
+								><td>{o.year}</td><td>{o.count} scrobbles</td><td class="muted"
+									>{o.top}</td
+								></tr
+							>{/each}</tbody
+					>
+				</table>
+			</div>
+		{/if}
+
+		<div class="cols">
+			<div class="card">
+				<b>Top artists in sample</b>
+				<table>
+					<tbody
+						>{#each data.topArtists as [k, v] (k)}<tr
+								><td>{k}</td><td class="num">{fmt(v)}</td></tr
+							>{/each}</tbody
+					>
+				</table>
+			</div>
+			<div class="card">
+				<b>Top tracks in sample</b>
+				<table>
+					<tbody
+						>{#each data.topTracks as [k, v] (k)}<tr
+								><td>{k}</td><td class="num">{fmt(v)}</td></tr
+							>{/each}</tbody
+					>
+				</table>
+			</div>
 		</div>
 	</div>
 {/if}

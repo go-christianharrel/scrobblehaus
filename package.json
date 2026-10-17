@@ -36,5 +36,8 @@
 		"#lib/*.svelte": "./src/lib/*.svelte",
 		"#lib/*": "./src/lib/*.ts"
 	},
-	"license": "MIT"
+	"license": "MIT",
+	"dependencies": {
+		"html-to-image": "^1.11.13"
+	}
 }

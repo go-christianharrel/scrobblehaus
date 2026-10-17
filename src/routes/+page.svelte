@@ -143,11 +143,11 @@
 	{/each}
 </div>
 
-<details class="about noprint">
+<details class="about">
 	<summary>About Scrobblehaus</summary>
 	<p class="muted">
 		Scrobblehaus is a free set of Last.fm tools: make a Last.fm collage, see
-		your top artists, albums and tracks, print a Last.fm receipt, check how
+		your top artists, albums and tracks, make a Last.fm receipt, check how
 		mainstream your music taste is, explore your listening stats, compare with a
 		friend and export your scrobbles to CSV or JSON. No login, just your
 		username.

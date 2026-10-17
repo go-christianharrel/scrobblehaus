@@ -176,12 +176,11 @@
 		<input type="range" min="0.7" max="1.8" step="0.1" bind:value={textScale} />
 	</label>
 	<label>Background <input type="color" bind:value={background} /></label>
-	<button onclick={savePng} disabled={!ready}>Download PNG</button>
-	<button onclick={() => window.print()} disabled={!ready}>Print</button>
+	<button onclick={savePng} disabled={!ready}>Print</button>
 </div>
 
 <div class="status" class:err={failed} class:busy>{status}</div>
-<p class="muted noprint">
+<p class="muted">
 	When Last.fm has no image, we look it up on Deezer and iTunes. If nothing is
 	found, a colour tile with the name is shown.
 </p>
@@ -260,14 +259,5 @@
 	canvas {
 		max-width: 100%;
 		height: auto;
-	}
-	@media print {
-		.wrap {
-			background: #fff;
-			padding: 0;
-		}
-		canvas {
-			width: 100% !important;
-		}
 	}
 </style>
