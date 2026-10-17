@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { page } from '$app/state';
 	import { getProfile } from '#lib/lastfm';
+	import ConfirmModal from '#lib/ConfirmModal.svelte';
 	import Icon from '#lib/Icon.svelte';
 	import { cancelExport, exportJob } from '#lib/exporter.svelte';
 	import { settings } from '#lib/settings.svelte';
@@ -122,9 +123,19 @@
 			.finally(() => (settings.profileLoading = false));
 	});
 
+	let confirmSwitch = $state(false);
+
 	function apply(): void {
 		const name = draft.trim();
 		if (!name || name === settings.username) return;
+		if (exportJob.busy) {
+			confirmSwitch = true;
+			return;
+		}
+		switchUser(name);
+	}
+
+	function switchUser(name: string): void {
 		settings.username = name;
 		settings.save();
 		// Reload so the open tool re-runs for the new user.
@@ -351,6 +362,18 @@
 		{/if}
 	</main>
 </div>
+
+<ConfirmModal
+	bind:open={confirmSwitch}
+	title="Export still running"
+	message="Switching user reloads the page and cancels the running export. You can start it again afterwards."
+	confirmLabel="Stop and switch"
+	cancelLabel="Keep exporting"
+	onconfirm={() => {
+		cancelExport();
+		switchUser(draft.trim());
+	}}
+/>
 
 <svelte:window
 	onbeforeunload={(e) => {
