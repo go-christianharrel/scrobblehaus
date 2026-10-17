@@ -108,7 +108,7 @@
 
 {#if items.length}
 	<div class="receipt">
-		<h2>LAST.FM</h2>
+		<h2>SCROBBLEHAUS</h2>
 		<div class="c">
 			TOP {shownType.toUpperCase()} — {periodLabel(shownPeriod).toUpperCase()}
 		</div>

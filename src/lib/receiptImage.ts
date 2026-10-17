@@ -92,7 +92,7 @@ export function drawReceipt(
 	};
 	const bold = `bold ${FONT}`;
 
-	center('LAST.FM', 'bold 18px "Courier New", monospace');
+	center('SCROBBLEHAUS', 'bold 18px "Courier New", monospace');
 	center(data.title);
 	center(data.subtitle);
 	center(data.printedAt);
