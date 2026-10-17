@@ -1,3 +1,4 @@
+import { recordExport, type ExportRecord } from './exportHistory.svelte';
 import { api, getTop } from './lastfm';
 import { session, settings } from './settings.svelte';
 import type { TopType } from './types';
@@ -116,6 +117,18 @@ export const exportScrobbles = (opts: ScrobbleExportOptions): Promise<void> =>
 			);
 		}
 		exportJob.status = `${abort.aborted ? 'Cancelled. ' : 'Done! '}${fmt(rows.length)} scrobbles exported. You can now use them in Insights.`;
+		if (!abort.aborted)
+			recordExport({
+				user,
+				label: 'Scrobbles',
+				job: {
+					kind: 'scrobbles',
+					format: opts.format,
+					from: opts.from,
+					to: opts.to
+				},
+				count: rows.length
+			});
 	});
 
 export const exportLoved = (): Promise<void> =>
@@ -148,6 +161,12 @@ export const exportLoved = (): Promise<void> =>
 			'text/csv'
 		);
 		exportJob.status = `${rows.length} loved tracks exported.`;
+		recordExport({
+			user,
+			label: 'Loved tracks',
+			job: { kind: 'loved' },
+			count: rows.length
+		});
 	});
 
 export const exportTop = (type: TopType): Promise<void> =>
@@ -165,4 +184,22 @@ export const exportTop = (type: TopType): Promise<void> =>
 			'text/csv'
 		);
 		exportJob.status = `${items.length} ${type} exported.`;
+		recordExport({
+			user,
+			label: `Top ${type}`,
+			job: { kind: 'top', type },
+			count: items.length
+		});
 	});
+
+/** Runs a saved export again; the data is rebuilt from the cache or the API. */
+export const rerunExport = (record: ExportRecord): Promise<void> => {
+	const { job } = record;
+	if (job.kind === 'scrobbles')
+		return exportScrobbles({
+			from: job.from,
+			to: job.to,
+			format: job.format
+		});
+	return job.kind === 'loved' ? exportLoved() : exportTop(job.type);
+};
