@@ -193,7 +193,7 @@
 					<div class="row">
 						<span class="rank">{i + 1}</span>
 						<span class="an" title={s.name}>{s.name}</span>
-						<div class="bars">
+						<div class="duel">
 							<div class="side l">
 								<em>{fmt(s.mine)}</em>
 								<div
@@ -278,6 +278,7 @@
 		font: 800 22px var(--display);
 		color: #fff;
 		background: var(--grad);
+		background-origin: border-box;
 		box-shadow: 0 8px 24px rgba(255, 45, 85, 0.35);
 	}
 	.av.alt {
@@ -315,6 +316,7 @@
 	.dot.a,
 	.fill.a {
 		background: var(--grad);
+		background-origin: border-box;
 	}
 	.dot.b,
 	.fill.b {
@@ -338,7 +340,7 @@
 		white-space: nowrap;
 		font-size: 13px;
 	}
-	.bars {
+	.duel {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 3px;
@@ -374,7 +376,7 @@
 		.row {
 			grid-template-columns: 18px 1fr;
 		}
-		.bars {
+		.duel {
 			grid-column: 1 / -1;
 		}
 	}

@@ -181,6 +181,7 @@ button:active:not(:disabled) {
 }
 button.primary {
 	background: var(--grad);
+	background-origin: border-box;
 	border-color: transparent;
 	color: #fff;
 	box-shadow: 0 8px 24px rgba(255, 45, 85, 0.35);
@@ -189,6 +190,7 @@ button.primary:hover:not(:disabled) {
 	filter: brightness(1.1);
 	border-color: transparent;
 	background: var(--grad);
+	background-origin: border-box;
 	box-shadow: 0 10px 30px rgba(255, 45, 85, 0.5);
 }
 button:disabled {
@@ -296,6 +298,7 @@ button:disabled {
 	height: 2px;
 	width: 40%;
 	background: var(--grad);
+	background-origin: border-box;
 	border-radius: 2px;
 	animation: sweep 1.3s ease-in-out infinite;
 }
@@ -382,6 +385,7 @@ td.bar {
 .barfill {
 	height: 8px;
 	background: var(--grad);
+	background-origin: border-box;
 	border-radius: 6px;
 	box-shadow: 0 0 12px rgba(255, 90, 77, 0.35);
 }
@@ -395,6 +399,7 @@ td.bar {
 .progress > div {
 	height: 100%;
 	background: var(--grad);
+	background-origin: border-box;
 	background-size: 200% 100%;
 	transition: width 0.25s;
 	box-shadow: 0 0 12px rgba(255, 90, 77, 0.45);
@@ -444,6 +449,7 @@ td.bar {
 .bars div {
 	flex: 1;
 	background: var(--grad);
+	background-origin: border-box;
 	border-radius: 6px 6px 2px 2px;
 	min-height: 3px;
 	opacity: 0.8;
@@ -514,6 +520,7 @@ td.bar {
 	letter-spacing: -0.04em;
 	line-height: 1.1;
 	background: var(--grad);
+	background-origin: border-box;
 	-webkit-background-clip: text;
 	background-clip: text;
 	color: transparent;

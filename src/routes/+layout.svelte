@@ -429,6 +429,7 @@
 	}
 	.logo span {
 		background: var(--grad);
+		background-origin: border-box;
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
@@ -495,6 +496,7 @@
 		overflow: hidden;
 		place-items: center;
 		background: var(--grad);
+		background-origin: border-box;
 		border: 0;
 	}
 	.menu img {
@@ -528,6 +530,7 @@
 		display: grid;
 		place-items: center;
 		background: var(--grad);
+		background-origin: border-box;
 		font-weight: 700;
 	}
 	.me:hover {
@@ -780,6 +783,7 @@
 	.export-pill .bar div {
 		height: 100%;
 		background: var(--grad);
+		background-origin: border-box;
 		transition: width 0.3s;
 	}
 	.export-pill button {

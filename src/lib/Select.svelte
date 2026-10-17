@@ -110,7 +110,11 @@
 					class:active={i === active}
 					class:chosen={option.value === value}
 					onpointerenter={() => (active = i)}
-					onclick={() => choose(i)}
+					onclick={(e) => {
+						// Inside a <label>, the click would re-activate the trigger.
+						e.preventDefault();
+						choose(i);
+					}}
 					onkeydown={null}
 				>
 					<span>{option.label}</span>
