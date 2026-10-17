@@ -2,7 +2,7 @@
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
-	import { api, fetchScrobbles } from '#lib/lastfm';
+	import { api } from '#lib/lastfm';
 	import { computeInsights, type Insights } from '#lib/insights';
 	import { session, settings } from '#lib/settings.svelte';
 	import { fmt } from '#lib/util';
@@ -77,7 +77,8 @@
 			const user = settings.requireUser();
 			const maxPages =
 				depth === 'all' ? Infinity : Math.ceil(Number(depth) / 200);
-			const rows = await fetchScrobbles({
+			const { loadScrobbles } = await import('#lib/scrobbleCache');
+			const rows = await loadScrobbles({
 				user,
 				maxPages,
 				signal: abort,

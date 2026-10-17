@@ -1,13 +1,19 @@
 import type { Profile } from './settings.svelte';
 import { sleep } from './util';
 import type {
+	ArtistTrack,
+	RawArtistTopTracks,
 	RawItem,
 	RawRecent,
 	RawRecentTrack,
+	RawTrackInfo,
+	RawTrackScrobbles,
 	RawWrap,
 	Scrobble,
 	TopItem,
-	TopType
+	TopType,
+	TrackDetails,
+	TrackHistory
 } from './types';
 
 type RawUser = {
@@ -112,7 +118,7 @@ export async function getTop(
 	return out.slice(0, limit);
 }
 
-type FetchOptions = {
+export type FetchOptions = {
 	user: string;
 	from?: number;
 	to?: number;
@@ -121,49 +127,65 @@ type FetchOptions = {
 	onProgress?: (page: number, totalPages: number, total: number) => void;
 };
 
-export async function fetchScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
-	const { user, from, to, maxPages = Infinity, signal, onProgress } = opts;
+const PAGE_CONCURRENCY = 4;
+
+async function fetchPage(
+	params: Record<string, string | number>
+): Promise<RawRecent['recenttracks']> {
+	for (let attempt = 0; ; attempt++) {
+		try {
+			return (await api<RawRecent>('user.getrecenttracks', params))
+				.recenttracks;
+		} catch (e) {
+			if (attempt >= 3) throw e;
+			await sleep(1500 * (attempt + 1));
+		}
+	}
+}
+
+function toScrobbles(page: RawRecent['recenttracks']): Scrobble[] {
+	const tracks: RawRecentTrack[] = ([] as RawRecentTrack[]).concat(
+		page.track ?? []
+	);
 	const out: Scrobble[] = [];
-	let page = 1;
-	let totalPages = 1;
-	while (page <= totalPages && page <= maxPages && !signal?.aborted) {
-		const params: Record<string, string | number> = { user, limit: 200, page };
-		if (from) params.from = from;
-		if (to) params.to = to;
-		let data: RawRecent | undefined;
-		for (let attempt = 0; !data; attempt++) {
-			try {
-				data = await api<RawRecent>('user.getrecenttracks', params);
-			} catch (e) {
-				if (attempt >= 3) throw e;
-				await sleep(1500 * (attempt + 1));
-			}
-		}
-		const rt = data.recenttracks;
-		totalPages = Number(rt['@attr'].totalPages) || 1;
-		const tracks: RawRecentTrack[] = ([] as RawRecentTrack[]).concat(
-			rt.track ?? []
-		);
-		for (const t of tracks) {
-			const uts = Number(t.date?.uts);
-			if (t['@attr']?.nowplaying || !uts) continue;
-			out.push({
-				uts,
-				artist: t.artist['#text'],
-				album: t.album?.['#text'] ?? '',
-				track: t.name,
-				mbid: t.mbid ?? ''
-			});
-		}
-		onProgress?.(
-			page,
-			Math.min(totalPages, maxPages),
-			Number(rt['@attr'].total)
-		);
-		page++;
-		await sleep(120);
+	for (const t of tracks) {
+		const uts = Number(t.date?.uts);
+		if (t['@attr']?.nowplaying || !uts) continue;
+		out.push({
+			uts,
+			artist: t.artist['#text'],
+			album: t.album?.['#text'] ?? '',
+			track: t.name,
+			mbid: t.mbid ?? ''
+		});
 	}
 	return out;
+}
+
+/** Page 1 sets the page count, then the rest load a few at a time. */
+export async function fetchScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
+	const { user, from, to, maxPages = Infinity, signal, onProgress } = opts;
+	const params: Record<string, string | number> = { user, limit: 200 };
+	if (from) params.from = from;
+	if (to) params.to = to;
+
+	const first = await fetchPage({ ...params, page: 1 });
+	const total = Number(first['@attr'].total);
+	const totalPages = Math.min(Number(first['@attr'].totalPages) || 1, maxPages);
+	const pages: Scrobble[][] = [toScrobbles(first)];
+	let done = 1;
+	let next = 2;
+	onProgress?.(done, totalPages, total);
+
+	const worker = async (): Promise<void> => {
+		while (next <= totalPages && !signal?.aborted) {
+			const page = next++;
+			pages[page - 1] = toScrobbles(await fetchPage({ ...params, page }));
+			onProgress?.(++done, totalPages, total);
+		}
+	};
+	await Promise.all(Array.from({ length: PAGE_CONCURRENCY }, worker));
+	return pages.flat();
 }
 
 const imageCache = new Map<string, string>();
@@ -205,4 +227,97 @@ export async function fillImages(
 		}
 	};
 	await Promise.all(Array.from({ length: 5 }, worker));
+}
+
+const DAY_SECONDS = 86400;
+
+export async function getTrackDetails(
+	artist: string,
+	track: string,
+	user: string
+): Promise<TrackDetails> {
+	const { track: t } = await api<RawTrackInfo>('track.getinfo', {
+		artist,
+		track,
+		username: user
+	});
+	return {
+		listeners: Number(t.listeners) || 0,
+		plays: Number(t.playcount) || 0,
+		mine: Number(t.userplaycount) || 0,
+		loved: t.userloved === '1',
+		durationMs: Number(t.duration) || 0,
+		tags: (t.toptags?.tag ?? []).slice(0, 3).map((tag) => tag.name)
+	};
+}
+
+async function getTrackScrobbleDates(
+	artist: string,
+	track: string,
+	user: string,
+	page: number
+): Promise<{ uts: number[]; totalPages: number }> {
+	const data = await api<RawTrackScrobbles>('user.gettrackscrobbles', {
+		artist,
+		track,
+		user,
+		limit: 200,
+		page
+	});
+	const rows = ([] as { date?: { uts: string } }[]).concat(
+		data.trackscrobbles.track ?? []
+	);
+	return {
+		uts: rows.map((r) => Number(r.date?.uts)).filter(Boolean),
+		totalPages: Number(data.trackscrobbles['@attr'].totalPages) || 1
+	};
+}
+
+/** Newest page gives the recent counts, the last page gives the first play. */
+export async function getTrackHistory(
+	artist: string,
+	track: string,
+	user: string
+): Promise<TrackHistory | null> {
+	const latest = await getTrackScrobbleDates(artist, track, user, 1);
+	if (!latest.uts.length) return null;
+	const oldest =
+		latest.totalPages > 1
+			? await getTrackScrobbleDates(artist, track, user, latest.totalPages)
+			: latest;
+	const now = Date.now() / 1000;
+	const since = (days: number): number =>
+		latest.uts.filter((uts) => uts >= now - days * DAY_SECONDS).length;
+	return {
+		firstUts: Math.min(...oldest.uts),
+		week: since(7),
+		month: since(30)
+	};
+}
+
+/** Other popular tracks by the artist, each with the user's own play count. */
+export async function getArtistTracks(
+	artist: string,
+	exclude: string,
+	user: string
+): Promise<ArtistTrack[]> {
+	const data = await api<RawArtistTopTracks>('artist.gettoptracks', {
+		artist,
+		limit: 6
+	});
+	// Drops edits of the current track too ("Song - Radio Edit").
+	const base = (name: string): string => name.split(' - ')[0].toLowerCase();
+	const names = (data.toptracks.track ?? [])
+		.map((t) => t.name)
+		.filter((name) => base(name) !== base(exclude))
+		.slice(0, 3);
+	return Promise.all(
+		names.map(async (name): Promise<ArtistTrack> => {
+			try {
+				return { name, mine: (await getTrackDetails(artist, name, user)).mine };
+			} catch {
+				return { name, mine: 0 };
+			}
+		})
+	);
 }

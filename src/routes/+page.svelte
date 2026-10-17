@@ -217,6 +217,7 @@
 	}
 	h1 span {
 		background: var(--grad);
+		background-origin: border-box;
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
@@ -289,6 +290,7 @@
 		top: 8px;
 		left: 8px;
 		background: var(--grad);
+		background-origin: border-box;
 		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.08em;

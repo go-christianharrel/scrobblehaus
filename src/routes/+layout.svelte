@@ -2,7 +2,9 @@
 	import '../app.css';
 	import { page } from '$app/state';
 	import { getProfile } from '#lib/lastfm';
+	import ConfirmModal from '#lib/ConfirmModal.svelte';
 	import Icon from '#lib/Icon.svelte';
+	import { cancelExport, exportJob } from '#lib/exporter.svelte';
 	import { settings } from '#lib/settings.svelte';
 	import { TOOLS } from '#lib/tools';
 	import { fmt } from '#lib/util';
@@ -110,6 +112,9 @@
 			offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }
 		}).replace(/</g, '\\u003c')
 	);
+	const showExportPill = $derived(
+		(exportJob.busy || exportJob.unseen) && page.url.pathname !== '/export'
+	);
 	let nameInput = $state<HTMLInputElement>();
 	const showForm = $derived(switching || !settings.username);
 
@@ -157,9 +162,19 @@
 			.finally(() => (settings.profileLoading = false));
 	});
 
+	let confirmSwitch = $state(false);
+
 	function apply(): void {
 		const name = draft.trim();
 		if (!name || name === settings.username) return;
+		if (exportJob.busy) {
+			confirmSwitch = true;
+			return;
+		}
+		switchUser(name);
+	}
+
+	function switchUser(name: string): void {
 		settings.username = name;
 		settings.save();
 		// Reload so the open tool re-runs for the new user.
@@ -396,6 +411,39 @@
 	</main>
 </div>
 
+<ConfirmModal
+	bind:open={confirmSwitch}
+	title="Export still running"
+	message="Switching user reloads the page and cancels the running export. You can start it again afterwards."
+	confirmLabel="Stop and switch"
+	cancelLabel="Keep exporting"
+	onconfirm={() => {
+		cancelExport();
+		switchUser(draft.trim());
+	}}
+/>
+
+<svelte:window
+	onbeforeunload={(e) => {
+		if (exportJob.busy) e.preventDefault();
+	}}
+/>
+
+{#if showExportPill}
+	<div class="export-pill noprint" class:err={exportJob.failed} role="status">
+		<a href="/export">
+			<b>{exportJob.busy ? exportJob.label : 'Export finished'}</b>
+			<span>{exportJob.status}</span>
+		</a>
+		{#if exportJob.busy}
+			<div class="bar"><div style="width: {exportJob.percent}%"></div></div>
+			<button onclick={cancelExport}>Cancel</button>
+		{:else}
+			<button onclick={() => (exportJob.unseen = false)}>Dismiss</button>
+		{/if}
+	</div>
+{/if}
+
 <style>
 	.shell {
 		display: grid;
@@ -429,6 +477,7 @@
 	}
 	.logo span {
 		background: var(--grad);
+		background-origin: border-box;
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
@@ -495,6 +544,7 @@
 		overflow: hidden;
 		place-items: center;
 		background: var(--grad);
+		background-origin: border-box;
 		border: 0;
 	}
 	.menu img {
@@ -528,6 +578,7 @@
 		display: grid;
 		place-items: center;
 		background: var(--grad);
+		background-origin: border-box;
 		font-weight: 700;
 	}
 	.me:hover {
@@ -746,5 +797,49 @@
 			padding: 0;
 			max-width: none;
 		}
+	}
+	.export-pill {
+		position: fixed;
+		right: 20px;
+		bottom: 20px;
+		z-index: 20;
+		width: min(340px, calc(100vw - 40px));
+		display: grid;
+		gap: 8px;
+		padding: 12px 14px;
+		background: var(--bg);
+		border: 1px solid var(--line);
+		border-radius: 16px;
+		box-shadow: var(--shadow);
+	}
+	.export-pill a {
+		display: grid;
+		gap: 2px;
+		font-size: 14px;
+		color: var(--text);
+	}
+	.export-pill span {
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.export-pill .bar {
+		height: 4px;
+		border-radius: 2px;
+		background: var(--panel2);
+		overflow: hidden;
+	}
+	.export-pill .bar div {
+		height: 100%;
+		background: var(--grad);
+		background-origin: border-box;
+		transition: width 0.3s;
+	}
+	.export-pill button {
+		justify-self: end;
+		font-size: 12px;
+		padding: 4px 12px;
+	}
+	.export-pill.err b {
+		color: #ff5a4d;
 	}
 </style>

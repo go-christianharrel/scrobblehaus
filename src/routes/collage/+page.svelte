@@ -239,6 +239,7 @@
 		color: #fff;
 		border-color: transparent;
 		background: var(--grad);
+		background-origin: border-box;
 		box-shadow: 0 6px 18px rgba(255, 45, 85, 0.3);
 	}
 	.chip-toggle input:focus-visible + span {

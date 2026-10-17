@@ -12,7 +12,9 @@ const ALLOWED = new Set([
 	'user.gettoptags',
 	'user.getlovedtracks',
 	'artist.getinfo',
-	'track.getinfo'
+	'artist.gettoptracks',
+	'track.getinfo',
+	'user.gettrackscrobbles'
 ]);
 const CACHE_MS = 5 * 60 * 1000;
 const MAX_CACHE = 2000;
