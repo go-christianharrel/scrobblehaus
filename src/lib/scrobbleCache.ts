@@ -66,6 +66,8 @@ async function writeCache(user: string, rows: Scrobble[]): Promise<void> {
 export async function loadScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
 	const { user, from = 0, to = 0, maxPages = Infinity, signal } = opts;
 	const cached = await readCache(user);
+	const limit = (rows: Scrobble[]): Scrobble[] =>
+		maxPages === Infinity ? rows : rows.slice(0, maxPages * PAGE_SIZE);
 
 	if (!cached?.length) {
 		const rows = await fetchScrobbles(opts);
@@ -74,6 +76,8 @@ export async function loadScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
 		return rows;
 	}
 
+	// What we already have is shown right away while the sync runs.
+	opts.onPartial?.(limit(inRange(cached, from, to)));
 	const fresh = await fetchScrobbles({
 		user,
 		signal,
@@ -83,6 +87,5 @@ export async function loadScrobbles(opts: FetchOptions): Promise<Scrobble[]> {
 	const merged = mergeScrobbles(fresh, cached);
 	// An aborted sync may have gaps, so it must not become the new cache.
 	if (!signal?.aborted) await writeCache(user, merged);
-	const rows = inRange(merged, from, to);
-	return maxPages === Infinity ? rows : rows.slice(0, maxPages * PAGE_SIZE);
+	return limit(inRange(merged, from, to));
 }
