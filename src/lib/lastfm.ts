@@ -112,7 +112,7 @@ export async function getTop(
 	return out.slice(0, limit);
 }
 
-type FetchOptions = {
+export type FetchOptions = {
 	user: string;
 	from?: number;
 	to?: number;
