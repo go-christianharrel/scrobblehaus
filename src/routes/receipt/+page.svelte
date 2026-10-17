@@ -1,9 +1,16 @@
 <script lang="ts">
+	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
 	import { getTop } from '#lib/lastfm';
 	import { settings } from '#lib/settings.svelte';
-	import { PERIODS, periodLabel, type TopItem, type TopType } from '#lib/types';
+	import {
+		PERIODS,
+		periodLabel,
+		TOP_TYPE_OPTIONS,
+		type TopItem,
+		type TopType
+	} from '#lib/types';
 	import { clamp, fmt } from '#lib/util';
 
 	let type = $state<TopType>('tracks');
@@ -53,18 +60,11 @@
 <div class="controls">
 	<label
 		>Type
-		<select bind:value={type}>
-			<option value="tracks">Tracks</option>
-			<option value="artists">Artists</option>
-			<option value="albums">Albums</option>
-		</select>
+		<Select bind:value={type} options={TOP_TYPE_OPTIONS} />
 	</label>
 	<label
 		>Period
-		<select bind:value={period}>
-			{#each PERIODS as p (p.value)}<option value={p.value}>{p.label}</option
-				>{/each}
-		</select>
+		<Select bind:value={period} options={PERIODS} />
 	</label>
 	<label
 		>Items <input

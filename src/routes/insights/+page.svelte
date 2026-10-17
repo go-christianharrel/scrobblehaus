@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
 	import { api, fetchScrobbles } from '#lib/lastfm';
@@ -16,6 +17,16 @@
 		since: number;
 		artists: string;
 	};
+
+	const DEPTH_OPTIONS: { value: string; label: string }[] = [
+		{ value: '1000', label: 'Last 1,000' },
+		{ value: '2000', label: 'Last 2,000 (fast)' },
+		{ value: '5000', label: 'Last 5,000' },
+		{ value: '10000', label: 'Last 10,000' },
+		{ value: '25000', label: 'Last 25,000' },
+		{ value: '50000', label: 'Last 50,000' },
+		{ value: 'all', label: 'Everything (all-time)' }
+	];
 
 	let depth = $state('2000');
 	let status = $state('');
@@ -108,15 +119,7 @@
 <div class="controls">
 	<label
 		>Scrobbles to analyse
-		<select bind:value={depth}>
-			<option value="1000">Last 1,000</option>
-			<option value="2000">Last 2,000 (fast)</option>
-			<option value="5000">Last 5,000</option>
-			<option value="10000">Last 10,000</option>
-			<option value="25000">Last 25,000</option>
-			<option value="50000">Last 50,000</option>
-			<option value="all">Everything (all-time)</option>
-		</select>
+		<Select bind:value={depth} options={DEPTH_OPTIONS} />
 	</label>
 	<button class="primary" onclick={load} disabled={busy}
 		>Load profile + scrobbles</button

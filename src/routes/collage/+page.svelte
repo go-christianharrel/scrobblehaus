@@ -1,10 +1,16 @@
 <script lang="ts">
+	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
 	import { fillImages, getTop } from '#lib/lastfm';
 	import { loadImage, renderCollage } from '#lib/collage';
 	import { settings } from '#lib/settings.svelte';
-	import { PERIODS, type TopItem, type TopType } from '#lib/types';
+	import {
+		PERIODS,
+		TOP_TYPE_OPTIONS,
+		type TopItem,
+		type TopType
+	} from '#lib/types';
 	import { clamp } from '#lib/util';
 
 	const TITLE_LABELS: Record<TopType, string> = {
@@ -112,18 +118,11 @@
 <div class="controls">
 	<label
 		>Type
-		<select bind:value={type}>
-			<option value="albums">Albums</option>
-			<option value="artists">Artists</option>
-			<option value="tracks">Tracks</option>
-		</select>
+		<Select bind:value={type} options={TOP_TYPE_OPTIONS} />
 	</label>
 	<label
 		>Period
-		<select bind:value={period}>
-			{#each PERIODS as p (p.value)}<option value={p.value}>{p.label}</option
-				>{/each}
-		</select>
+		<Select bind:value={period} options={PERIODS} />
 	</label>
 	<label class="num"
 		>Columns <input type="number" min="1" max="15" bind:value={cols} /></label

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
 	import { api, getTop } from '#lib/lastfm';
@@ -141,10 +142,7 @@
 <div class="controls">
 	<label
 		>Period
-		<select bind:value={period}>
-			{#each PERIODS as p (p.value)}<option value={p.value}>{p.label}</option
-				>{/each}
-		</select>
+		<Select bind:value={period} options={PERIODS} />
 	</label>
 	<label
 		>Artists to scan <input
