@@ -11,7 +11,6 @@ export type ReceiptData = {
 
 const SCALE = 2;
 const WIDTH = 380;
-const MARGIN = 24;
 const PAD = 24;
 const FONT = '13px "Courier New", monospace';
 const LINE = 20;
@@ -29,7 +28,11 @@ const fitText = (
 	return `${text.slice(0, cut)}…`;
 };
 
-const rowCount = (items: TopItem[]): number => items.length + 17;
+const BARCODE = 44;
+const FIXED_ROWS = 12;
+
+const receiptHeight = (items: TopItem[]): number =>
+	PAD * 2 + LINE / 2 + (items.length + FIXED_ROWS) * LINE + BARCODE + LINE;
 
 export function drawReceipt(
 	canvas: HTMLCanvasElement,
@@ -37,13 +40,10 @@ export function drawReceipt(
 ): void {
 	const ctx = canvas.getContext('2d');
 	if (!ctx) throw new Error('Canvas is not supported in this browser.');
-	const height = rowCount(data.items) * LINE + PAD * 2 + TOOTH;
-	canvas.width = (WIDTH + MARGIN * 2) * SCALE;
-	canvas.height = (height + MARGIN * 2) * SCALE;
+	const height = receiptHeight(data.items);
+	canvas.width = WIDTH * SCALE;
+	canvas.height = height * SCALE;
 	ctx.scale(SCALE, SCALE);
-	ctx.fillStyle = '#0d0d12';
-	ctx.fillRect(0, 0, WIDTH + MARGIN * 2, height + MARGIN * 2);
-	ctx.translate(MARGIN, MARGIN);
 
 	ctx.fillStyle = '#fff';
 	ctx.beginPath();
@@ -61,7 +61,11 @@ export function drawReceipt(
 	ctx.strokeStyle = '#444';
 	ctx.font = FONT;
 	ctx.textBaseline = 'middle';
+	const bold = `bold ${FONT}`;
 	const inner = WIDTH - PAD * 2;
+	ctx.font = bold;
+	const qtyWidth = ctx.measureText('QTY').width;
+	ctx.font = FONT;
 	let y = PAD + LINE / 2;
 
 	const center = (text: string, font = FONT): void => {
@@ -85,12 +89,11 @@ export function drawReceipt(
 		ctx.textAlign = 'right';
 		ctx.fillText(plays, WIDTH - PAD, y);
 		ctx.textAlign = 'left';
-		const itemX = PAD + ctx.measureText('00').width + 8;
+		const itemX = PAD + qtyWidth + 8;
 		const itemMax = inner - (itemX - PAD) - ctx.measureText(plays).width - 8;
 		ctx.fillText(fitText(ctx, item, itemMax), itemX, y);
 		y += LINE;
 	};
-	const bold = `bold ${FONT}`;
 
 	center('SCROBBLEHAUS', 'bold 18px "Courier New", monospace');
 	center(data.title);
@@ -115,10 +118,10 @@ export function drawReceipt(
 	let i = 0;
 	while (x < WIDTH - PAD) {
 		const w = bars[i % bars.length];
-		if (i % 2 === 0) ctx.fillRect(x, y, w, 44);
+		if (i % 2 === 0) ctx.fillRect(x, y, w, BARCODE);
 		x += w;
 		i++;
 	}
-	y += 44 + LINE / 2;
+	y += BARCODE + LINE / 2;
 	center(data.user);
 }
