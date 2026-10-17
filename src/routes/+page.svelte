@@ -322,26 +322,10 @@
 			border-color 0.2s,
 			box-shadow 0.2s;
 	}
-	.tile::after {
-		content: '';
-		position: absolute;
-		inset: auto -30% -60% auto;
-		width: 200px;
-		height: 200px;
-		background: radial-gradient(
-			circle,
-			hsl(var(--h) 90% 60% / 0.28),
-			transparent 65%
-		);
-		transition: transform 0.4s;
-	}
 	.tile:hover {
 		transform: translateY(-4px);
 		border-color: hsl(var(--h) 90% 60% / 0.6);
 		box-shadow: 0 18px 44px hsl(var(--h) 90% 50% / 0.2);
-	}
-	.tile:hover::after {
-		transform: scale(1.4);
 	}
 	.icon {
 		width: 46px;
