@@ -41,14 +41,16 @@
 	// Show the list right away, then fill in missing artwork as it resolves.
 	$effect(() => {
 		const tracks = recentFeed.tracks;
-		recent = tracks.map((t) => ({
+		// Built from a plain array so this effect never reads state it writes.
+		const list: Recent[] = tracks.map((t) => ({
 			name: t.name,
 			artist: t.artist['#text'],
 			art: artOf(t),
 			live: Boolean(t['@attr']?.nowplaying)
 		}));
+		recent = list;
 		tracks.forEach((t, i) => {
-			if (recent[i].art) return;
+			if (list[i].art) return;
 			void findImage('tracks', t.name, t.artist['#text']).then((art) => {
 				if (recent[i]?.name === t.name) recent[i].art = art;
 			});
