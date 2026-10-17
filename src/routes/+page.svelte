@@ -138,8 +138,8 @@
 	{/each}
 </div>
 
-<section class="about">
-	<h2>Free Last.fm tools</h2>
+<details class="about noprint">
+	<summary>About Scrobblehaus</summary>
 	<p class="muted">
 		Scrobblehaus is a free set of Last.fm tools: make a Last.fm collage, see
 		your top artists, albums and tracks, print a Last.fm receipt, check how
@@ -152,25 +152,27 @@
 			<li><a href={tool.href}>{tool.seoTitle.split(' | ')[0]}</a></li>
 		{/each}
 	</ul>
-</section>
+</details>
 
 <style>
 	.about {
 		margin-top: 40px;
 		max-width: 680px;
+		font-size: 13px;
+		color: var(--muted);
 	}
-	.about h2 {
-		font-size: 18px;
-		margin: 0 0 6px;
+	.about summary {
+		cursor: pointer;
+		font-weight: 600;
+		letter-spacing: 0.04em;
 	}
 	.about p {
-		font-size: 14px;
+		margin-top: 10px;
 		line-height: 1.55;
 	}
 	.about ul {
-		margin: 12px 0 0;
+		margin: 10px 0 0;
 		padding-left: 18px;
-		font-size: 14px;
 		line-height: 1.8;
 	}
 	.eyebrow-skel {
