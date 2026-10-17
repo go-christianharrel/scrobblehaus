@@ -2,6 +2,7 @@
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
+	import { saveElementAsPng } from '#lib/saveImage';
 	import { getTop } from '#lib/lastfm';
 	import { settings } from '#lib/settings.svelte';
 	import {
@@ -95,6 +96,12 @@
 		);
 	}
 
+	let shot = $state<HTMLElement>();
+
+	function printImage(): void {
+		if (shot) void saveElementAsPng(shot, 'lastfm-charts.png');
+	}
+
 	onMount(() => {
 		if (settings.username) void load();
 	});
@@ -125,14 +132,13 @@
 	>
 	<button class="primary" onclick={load} disabled={busy}>Load</button>
 	<button onclick={exportCsv} disabled={!rows.length}>Export CSV</button>
-	<button onclick={() => window.print()} disabled={!rows.length}>Print</button>
+	<button onclick={printImage} disabled={!rows.length}>Print</button>
 </div>
 
 <div class="status" class:err={failed} class:busy>{status}</div>
 
 {#if rows.length}
-	<div class="card">
-		<div class="printtitle">{title}</div>
+	<div class="card" bind:this={shot}>
 		<table>
 			<thead>
 				<tr

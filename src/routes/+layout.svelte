@@ -215,7 +215,7 @@
 </svelte:head>
 
 <div class="shell">
-	<aside class="noprint">
+	<aside>
 		<div class="top">
 			<a class="logo" href="/">Scrobble<span>haus</span></a>
 			<a
@@ -380,7 +380,7 @@
 
 	<main>
 		{#if !data.serverKey}
-			<div class="setup noprint">
+			<div class="setup">
 				<b>Almost there — one-time owner setup.</b>
 				Add your free Last.fm API key to <code>.env</code> as
 				<code>LASTFM_API_KEY=…</code>
@@ -393,13 +393,13 @@
 			</div>
 		{/if}
 		{#if settings.ready && !settings.username && page.url.pathname !== '/'}
-			<div class="hint noprint">
+			<div class="hint">
 				Type your Last.fm username in the sidebar to start.
 			</div>
 		{/if}
 		{@render children()}
 		{#if tool}
-			<section class="about noprint">
+			<section class="about">
 				<h2>About {tool.label}</h2>
 				<p class="muted">{tool.seoDesc}</p>
 				{#each tool.faq as [q, a] (q)}
@@ -430,7 +430,7 @@
 />
 
 {#if showExportPill}
-	<div class="export-pill noprint" class:err={exportJob.failed} role="status">
+	<div class="export-pill" class:err={exportJob.failed} role="status">
 		<a href="/export">
 			<b>{exportJob.busy ? exportJob.label : 'Export finished'}</b>
 			<span>{exportJob.status}</span>
@@ -787,15 +787,6 @@
 		}
 		main {
 			padding: 18px 14px 48px;
-		}
-	}
-	@media print {
-		.shell {
-			display: block;
-		}
-		main {
-			padding: 0;
-			max-width: none;
 		}
 	}
 	.export-pill {

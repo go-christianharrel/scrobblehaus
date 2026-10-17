@@ -31,7 +31,6 @@
 
 <dialog
 	bind:this={dialog}
-	class="noprint"
 	aria-labelledby="confirm-title"
 	onclose={() => (open = false)}
 	onclick={(e) => {

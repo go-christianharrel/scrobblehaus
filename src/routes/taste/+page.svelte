@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { saveElementAsPng } from '#lib/saveImage';
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
@@ -133,6 +134,12 @@
 		}
 	}
 
+	let shot = $state<HTMLElement>();
+
+	function printImage(): void {
+		if (shot) void saveElementAsPng(shot, 'lastfm-taste.png');
+	}
+
 	onMount(() => {
 		if (settings.username) void analyse();
 	});
@@ -156,123 +163,124 @@
 	<button class="primary" onclick={analyse} disabled={busy}
 		>Analyse taste</button
 	>
-	<button onclick={() => window.print()} disabled={!result}>Print</button>
+	<button onclick={printImage} disabled={!result}>Print</button>
 </div>
 <div class="status" class:err={failed} class:busy>{status}</div>
 
 {#if result}
-	<div class="printtitle">{result.user} — Taste profile</div>
-
-	<div class="card type">
-		<div class="type-head">
-			<div class="code">
-				{#each result.type.code.split('') as letter, i (i)}<span>{letter}</span
-					>{/each}
+	<div bind:this={shot}>
+		<div class="card type">
+			<div class="type-head">
+				<div class="code">
+					{#each result.type.code.split('') as letter, i (i)}<span
+							>{letter}</span
+						>{/each}
+				</div>
+				<div>
+					<div class="eyebrow">Your music type</div>
+					<h2>{result.type.name}</h2>
+					<p class="muted">{result.type.tagline}</p>
+				</div>
 			</div>
-			<div>
-				<div class="eyebrow">Your music type</div>
-				<h2>{result.type.name}</h2>
-				<p class="muted">{result.type.tagline}</p>
-			</div>
-		</div>
-		<div class="axes">
-			{#each result.type.axes as a (a.left)}
-				<div class="axis-row">
-					<span class:win={a.value < 0.5}>{a.left}</span>
-					<div class="track">
-						<i style="left: calc({(a.value * 100).toFixed(0)}% - 7px)"></i>
+			<div class="axes">
+				{#each result.type.axes as a (a.left)}
+					<div class="axis-row">
+						<span class:win={a.value < 0.5}>{a.left}</span>
+						<div class="track">
+							<i style="left: calc({(a.value * 100).toFixed(0)}% - 7px)"></i>
+						</div>
+						<span class:win={a.value >= 0.5}>{a.right}</span>
+						<em>{a.percent}%</em>
 					</div>
-					<span class:win={a.value >= 0.5}>{a.right}</span>
-					<em>{a.percent}%</em>
-				</div>
-			{/each}
+				{/each}
+			</div>
 		</div>
-	</div>
 
-	<div class="card">
-		<b>Character match</b>
-		<div class="muted">
-			Your vibe: {result.traits.join(' • ')}. Just for fun, based on your tags
-			and mainstream score.
-		</div>
-		<div class="chars">
-			{#each result.categories as m (m.character.name)}
-				<div class="char">
-					<span class="cat"
-						>{m.character.category === 'Anime'
-							? '🌸'
-							: m.character.category === 'Movie'
-								? '🎬'
-								: '⭐'}
-						{m.character.category}</span
-					>
-					<div class="pct">{m.percent}%</div>
-					<b>{m.character.name}</b>
-					{#if m.character.category !== 'Real life' && m.character.from !== m.character.name}<span
-							class="muted">{m.character.from}</span
-						>{/if}
-					<p>{m.character.blurb}</p>
-				</div>
-			{/each}
-		</div>
-		<table>
-			<tbody>
-				{#each result.top as m (m.character.name)}
-					<tr>
-						<td
-							>{m.character.name}
-							<span class="muted">({m.character.from})</span></td
+		<div class="card">
+			<b>Character match</b>
+			<div class="muted">
+				Your vibe: {result.traits.join(' • ')}. Just for fun, based on your tags
+				and mainstream score.
+			</div>
+			<div class="chars">
+				{#each result.categories as m (m.character.name)}
+					<div class="char">
+						<span class="cat"
+							>{m.character.category === 'Anime'
+								? '🌸'
+								: m.character.category === 'Movie'
+									? '🎬'
+									: '⭐'}
+							{m.character.category}</span
 						>
-						<td class="num">{m.percent}%</td>
-					</tr>
+						<div class="pct">{m.percent}%</div>
+						<b>{m.character.name}</b>
+						{#if m.character.category !== 'Real life' && m.character.from !== m.character.name}<span
+								class="muted">{m.character.from}</span
+							>{/if}
+						<p>{m.character.blurb}</p>
+					</div>
 				{/each}
-			</tbody>
-		</table>
-	</div>
-
-	<div class="card">
-		<div class="big">{result.score}/100 — {result.verdict}</div>
-		<div class="muted">
-			Mainstream factor (weighted by plays and global listeners).
+			</div>
+			<table>
+				<tbody>
+					{#each result.top as m (m.character.name)}
+						<tr>
+							<td
+								>{m.character.name}
+								<span class="muted">({m.character.from})</span></td
+							>
+							<td class="num">{m.percent}%</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
 		</div>
-		<div class="pill"><i style="left: calc({result.score}% - 2px)"></i></div>
-		<div class="axis">
-			<span style="text-align: left">Underground</span><span
-				style="text-align: right">Mainstream</span
-			>
-		</div>
-	</div>
 
-	<div class="card">
-		<b>Genre / tag cloud</b>
-		<div class="cloud">
-			{#each result.tags as t (t.name)}
-				<span
-					style="font-size: {(12 + (t.count / maxTag) * 30).toFixed(
-						0
-					)}px; color: hsl({hashHue(t.name)}, 65%, 65%)">{t.name}</span
+		<div class="card">
+			<div class="big">{result.score}/100 — {result.verdict}</div>
+			<div class="muted">
+				Mainstream factor (weighted by plays and global listeners).
+			</div>
+			<div class="pill"><i style="left: calc({result.score}% - 2px)"></i></div>
+			<div class="axis">
+				<span style="text-align: left">Underground</span><span
+					style="text-align: right">Mainstream</span
 				>
-			{:else}
-				<span class="muted">No tags.</span>
-			{/each}
+			</div>
 		</div>
-	</div>
 
-	<div class="card">
-		<b>Iceberg — your deepest cuts</b>
-		<div class="muted">
-			The least-known artists in your top list, deepest first.
-		</div>
-		<table>
-			<tbody>
-				{#each result.deep as x (x.name)}
-					<tr
-						><td>{x.name}</td><td class="num">{fmt(x.listeners)} listeners</td
-						><td class="num">{fmt(x.plays)} plays</td></tr
+		<div class="card">
+			<b>Genre / tag cloud</b>
+			<div class="cloud">
+				{#each result.tags as t (t.name)}
+					<span
+						style="font-size: {(12 + (t.count / maxTag) * 30).toFixed(
+							0
+						)}px; color: hsl({hashHue(t.name)}, 65%, 65%)">{t.name}</span
 					>
+				{:else}
+					<span class="muted">No tags.</span>
 				{/each}
-			</tbody>
-		</table>
+			</div>
+		</div>
+
+		<div class="card">
+			<b>Iceberg — your deepest cuts</b>
+			<div class="muted">
+				The least-known artists in your top list, deepest first.
+			</div>
+			<table>
+				<tbody>
+					{#each result.deep as x (x.name)}
+						<tr
+							><td>{x.name}</td><td class="num">{fmt(x.listeners)} listeners</td
+							><td class="num">{fmt(x.plays)} plays</td></tr
+						>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	</div>
 {/if}
 
@@ -479,18 +487,5 @@
 	}
 	.axis span {
 		flex: 1;
-	}
-	@media print {
-		.pct {
-			color: #000;
-			background: none;
-		}
-		.cloud span {
-			color: #000 !important;
-		}
-		.char {
-			background: #fff;
-			border: 1px solid #ccc;
-		}
 	}
 </style>

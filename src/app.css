@@ -525,13 +525,6 @@ td.bar {
 	background-clip: text;
 	color: transparent;
 }
-.printtitle {
-	display: none;
-	font-size: 18px;
-	font-weight: 700;
-	margin-bottom: 8px;
-}
-
 @media (max-width: 640px) {
 	body {
 		font-size: 14px;
@@ -590,72 +583,5 @@ td.bar {
 	*::before {
 		animation: none !important;
 		transition: none !important;
-	}
-}
-
-@media print {
-	body {
-		background: #fff;
-		color: #000;
-	}
-	body::before {
-		display: none;
-	}
-	.noprint,
-	.controls,
-	.hint,
-	.status,
-	.progress {
-		display: none !important;
-	}
-	.card,
-	.stat {
-		background: #fff;
-		border-color: #ccc;
-		color: #000;
-		box-shadow: none;
-		backdrop-filter: none;
-		animation: none;
-	}
-	th,
-	.muted,
-	.axis {
-		color: #444;
-	}
-	td,
-	th {
-		border-color: #ddd;
-	}
-	.barfill,
-	.bars div {
-		background: #444;
-		box-shadow: none;
-		-webkit-print-color-adjust: exact;
-		print-color-adjust: exact;
-	}
-	.heat i {
-		background: #eee;
-		box-shadow: none;
-		-webkit-print-color-adjust: exact;
-		print-color-adjust: exact;
-	}
-	.heat i.l1 {
-		background: #c9c9c9;
-	}
-	.heat i.l2 {
-		background: #999;
-	}
-	.heat i.l3 {
-		background: #555;
-	}
-	.heat i.l4 {
-		background: #000;
-	}
-	.big {
-		color: #000;
-		background: none;
-	}
-	.printtitle {
-		display: block;
 	}
 }
