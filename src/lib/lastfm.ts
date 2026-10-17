@@ -1,13 +1,19 @@
 import type { Profile } from './settings.svelte';
 import { sleep } from './util';
 import type {
+	ArtistTrack,
+	RawArtistTopTracks,
 	RawItem,
 	RawRecent,
 	RawRecentTrack,
+	RawTrackInfo,
+	RawTrackScrobbles,
 	RawWrap,
 	Scrobble,
 	TopItem,
-	TopType
+	TopType,
+	TrackDetails,
+	TrackHistory
 } from './types';
 
 type RawUser = {
@@ -221,4 +227,97 @@ export async function fillImages(
 		}
 	};
 	await Promise.all(Array.from({ length: 5 }, worker));
+}
+
+const DAY_SECONDS = 86400;
+
+export async function getTrackDetails(
+	artist: string,
+	track: string,
+	user: string
+): Promise<TrackDetails> {
+	const { track: t } = await api<RawTrackInfo>('track.getinfo', {
+		artist,
+		track,
+		username: user
+	});
+	return {
+		listeners: Number(t.listeners) || 0,
+		plays: Number(t.playcount) || 0,
+		mine: Number(t.userplaycount) || 0,
+		loved: t.userloved === '1',
+		durationMs: Number(t.duration) || 0,
+		tags: (t.toptags?.tag ?? []).slice(0, 3).map((tag) => tag.name)
+	};
+}
+
+async function getTrackScrobbleDates(
+	artist: string,
+	track: string,
+	user: string,
+	page: number
+): Promise<{ uts: number[]; totalPages: number }> {
+	const data = await api<RawTrackScrobbles>('user.gettrackscrobbles', {
+		artist,
+		track,
+		user,
+		limit: 200,
+		page
+	});
+	const rows = ([] as { date?: { uts: string } }[]).concat(
+		data.trackscrobbles.track ?? []
+	);
+	return {
+		uts: rows.map((r) => Number(r.date?.uts)).filter(Boolean),
+		totalPages: Number(data.trackscrobbles['@attr'].totalPages) || 1
+	};
+}
+
+/** Newest page gives the recent counts, the last page gives the first play. */
+export async function getTrackHistory(
+	artist: string,
+	track: string,
+	user: string
+): Promise<TrackHistory | null> {
+	const latest = await getTrackScrobbleDates(artist, track, user, 1);
+	if (!latest.uts.length) return null;
+	const oldest =
+		latest.totalPages > 1
+			? await getTrackScrobbleDates(artist, track, user, latest.totalPages)
+			: latest;
+	const now = Date.now() / 1000;
+	const since = (days: number): number =>
+		latest.uts.filter((uts) => uts >= now - days * DAY_SECONDS).length;
+	return {
+		firstUts: Math.min(...oldest.uts),
+		week: since(7),
+		month: since(30)
+	};
+}
+
+/** Other popular tracks by the artist, each with the user's own play count. */
+export async function getArtistTracks(
+	artist: string,
+	exclude: string,
+	user: string
+): Promise<ArtistTrack[]> {
+	const data = await api<RawArtistTopTracks>('artist.gettoptracks', {
+		artist,
+		limit: 6
+	});
+	// Drops edits of the current track too ("Song - Radio Edit").
+	const base = (name: string): string => name.split(' - ')[0].toLowerCase();
+	const names = (data.toptracks.track ?? [])
+		.map((t) => t.name)
+		.filter((name) => base(name) !== base(exclude))
+		.slice(0, 3);
+	return Promise.all(
+		names.map(async (name): Promise<ArtistTrack> => {
+			try {
+				return { name, mine: (await getTrackDetails(artist, name, user)).mine };
+			} catch {
+				return { name, mine: 0 };
+			}
+		})
+	);
 }

@@ -74,3 +74,45 @@ export type RawRecent = {
 		'@attr': { totalPages: string; total: string };
 	};
 };
+
+export type TrackDetails = {
+	listeners: number;
+	plays: number;
+	mine: number;
+	loved: boolean;
+	durationMs: number;
+	tags: string[];
+};
+
+export type TrackHistory = {
+	firstUts: number;
+	week: number;
+	month: number;
+};
+
+export type ArtistTrack = {
+	name: string;
+	mine: number;
+};
+
+export type RawTrackInfo = {
+	track: {
+		listeners?: string;
+		playcount?: string;
+		userplaycount?: string;
+		userloved?: string;
+		duration?: string;
+		toptags?: { tag?: { name: string }[] };
+	};
+};
+
+export type RawTrackScrobbles = {
+	trackscrobbles: {
+		track?: { date?: { uts: string } } | { date?: { uts: string } }[];
+		'@attr': { totalPages: string };
+	};
+};
+
+export type RawArtistTopTracks = {
+	toptracks: { track?: { name: string }[] };
+};
