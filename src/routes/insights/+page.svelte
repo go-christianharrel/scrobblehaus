@@ -1,5 +1,8 @@
 <script lang="ts">
+	import PixelGrid from '#lib/PixelGrid.svelte';
 	import Select from '#lib/Select.svelte';
+	import Velocity from '#lib/Velocity.svelte';
+	import Wall from '#lib/Wall.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
 	import { api } from '#lib/lastfm';
@@ -35,6 +38,8 @@
 	let profile = $state<Profile | null>(null);
 	let data = $state<Insights | null>(null);
 	let sampleSize = $state(0);
+	// Raw: a full history is hundreds of thousands of rows, so no deep proxy.
+	let scrobbles = $state.raw<Scrobble[]>([]);
 	const abort = { aborted: false };
 
 	async function loadProfile(user: string): Promise<Profile> {
@@ -66,6 +71,7 @@
 	}
 
 	function render(rows: Scrobble[]): void {
+		scrobbles = rows;
 		data = computeInsights(rows);
 		sampleSize = rows.length;
 	}
@@ -203,15 +209,7 @@
 		</div>
 	</div>
 
-	<div class="card">
-		<b>Last 12 months</b>
-		<div class="heat" style="margin-top: 10px">
-			{#each data.heat as h (h.day)}<i
-					class={h.level ? `l${h.level}` : ''}
-					title="{h.day}: {h.count}"
-				></i>{/each}
-		</div>
-	</div>
+	<PixelGrid rows={scrobbles} />
 
 	{#if data.onThisDay.length}
 		<div class="card">
@@ -250,4 +248,7 @@
 			</table>
 		</div>
 	</div>
+
+	<Wall rows={scrobbles} />
+	<Velocity rows={scrobbles} />
 {/if}
