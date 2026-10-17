@@ -193,7 +193,7 @@
 					<div class="row">
 						<span class="rank">{i + 1}</span>
 						<span class="an" title={s.name}>{s.name}</span>
-						<div class="bars">
+						<div class="duel">
 							<div class="side l">
 								<em>{fmt(s.mine)}</em>
 								<div
@@ -338,7 +338,7 @@
 		white-space: nowrap;
 		font-size: 13px;
 	}
-	.bars {
+	.duel {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 3px;
@@ -374,7 +374,7 @@
 		.row {
 			grid-template-columns: 18px 1fr;
 		}
-		.bars {
+		.duel {
 			grid-column: 1 / -1;
 		}
 	}
