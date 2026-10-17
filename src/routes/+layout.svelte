@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { getProfile } from '#lib/lastfm';
 	import Icon from '#lib/Icon.svelte';
+	import { cancelExport, exportJob } from '#lib/exporter.svelte';
 	import { settings } from '#lib/settings.svelte';
 	import { TOOLS } from '#lib/tools';
 	import { fmt } from '#lib/util';
@@ -70,6 +71,9 @@
 			operatingSystem: 'Any',
 			offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }
 		}).replace(/</g, '\\u003c')
+	);
+	const showExportPill = $derived(
+		(exportJob.busy || exportJob.unseen) && page.url.pathname !== '/export'
 	);
 	let nameInput = $state<HTMLInputElement>();
 	const showForm = $derived(switching || !settings.username);
@@ -347,6 +351,27 @@
 		{/if}
 	</main>
 </div>
+
+<svelte:window
+	onbeforeunload={(e) => {
+		if (exportJob.busy) e.preventDefault();
+	}}
+/>
+
+{#if showExportPill}
+	<div class="export-pill noprint" class:err={exportJob.failed} role="status">
+		<a href="/export">
+			<b>{exportJob.busy ? exportJob.label : 'Export finished'}</b>
+			<span>{exportJob.status}</span>
+		</a>
+		{#if exportJob.busy}
+			<div class="bar"><div style="width: {exportJob.percent}%"></div></div>
+			<button onclick={cancelExport}>Cancel</button>
+		{:else}
+			<button onclick={() => (exportJob.unseen = false)}>Dismiss</button>
+		{/if}
+	</div>
+{/if}
 
 <style>
 	.shell {
@@ -698,5 +723,48 @@
 			padding: 0;
 			max-width: none;
 		}
+	}
+	.export-pill {
+		position: fixed;
+		right: 20px;
+		bottom: 20px;
+		z-index: 20;
+		width: min(340px, calc(100vw - 40px));
+		display: grid;
+		gap: 8px;
+		padding: 12px 14px;
+		background: var(--bg);
+		border: 1px solid var(--line);
+		border-radius: 16px;
+		box-shadow: var(--shadow);
+	}
+	.export-pill a {
+		display: grid;
+		gap: 2px;
+		font-size: 14px;
+		color: var(--text);
+	}
+	.export-pill span {
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.export-pill .bar {
+		height: 4px;
+		border-radius: 2px;
+		background: var(--panel2);
+		overflow: hidden;
+	}
+	.export-pill .bar div {
+		height: 100%;
+		background: var(--grad);
+		transition: width 0.3s;
+	}
+	.export-pill button {
+		justify-self: end;
+		font-size: 12px;
+		padding: 4px 12px;
+	}
+	.export-pill.err b {
+		color: #ff5a4d;
 	}
 </style>
