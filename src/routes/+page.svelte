@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { api, findImage, PLACEHOLDER } from '#lib/lastfm';
 	import Icon from '#lib/Icon.svelte';
 	import NowPlaying from '#lib/NowPlaying.svelte';
@@ -57,7 +57,17 @@
 		}
 	}
 
-	onMount(loadRecent);
+	// Same cadence as the Now Playing card so the LIVE badge never disagrees with it.
+	let timer: ReturnType<typeof setInterval> | undefined;
+
+	onMount(() => {
+		void loadRecent();
+		timer = setInterval(() => {
+			if (!document.hidden) void loadRecent();
+		}, 15000);
+	});
+
+	onDestroy(() => clearInterval(timer));
 </script>
 
 <section class="hero">
