@@ -130,7 +130,12 @@
 <h3>Tools</h3>
 <div class="tiles">
 	{#each TOOLS as tool (tool.href)}
-		<a class="tile" href={tool.href} style="--h: {tool.hue}">
+		<a
+			class="tile"
+			href={tool.href}
+			title={tool.seoTitle.split(' | ')[0]}
+			style="--h: {tool.hue}"
+		>
 			<span class="icon"><Icon name={tool.icon} size={24} /></span>
 			<b>{tool.label}</b>
 			<span class="muted">{tool.blurb}</span>
@@ -147,11 +152,6 @@
 		friend and export your scrobbles to CSV or JSON. No login, just your
 		username.
 	</p>
-	<ul>
-		{#each TOOLS as tool (tool.href)}
-			<li><a href={tool.href}>{tool.seoTitle.split(' | ')[0]}</a></li>
-		{/each}
-	</ul>
 </details>
 
 <style>
@@ -176,31 +176,6 @@
 		max-width: 860px;
 		margin-top: 12px;
 		line-height: 1.6;
-	}
-	.about ul {
-		margin: 16px 0 0;
-		padding: 0;
-		list-style: none;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-		gap: 8px;
-	}
-	.about li a {
-		display: block;
-		padding: 10px 14px;
-		border: 1px solid var(--line);
-		border-radius: 12px;
-		background: var(--panel);
-		color: var(--text);
-		font-weight: 500;
-		text-decoration: none;
-		transition:
-			background 0.15s,
-			border-color 0.15s;
-	}
-	.about li a:hover {
-		background: var(--panel2);
-		border-color: var(--line2);
 	}
 	.eyebrow-skel {
 		width: 120px;
