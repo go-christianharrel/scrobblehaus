@@ -1,10 +1,22 @@
 <script lang="ts">
+	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
 	import { getTop } from '#lib/lastfm';
 	import { settings } from '#lib/settings.svelte';
-	import { PERIODS, periodLabel, type TopItem, type TopType } from '#lib/types';
+	import {
+		PERIODS,
+		periodLabel,
+		TOP_TYPE_OPTIONS,
+		type TopItem,
+		type TopType
+	} from '#lib/types';
 	import { clamp, download, fmt, stamp, toCsv } from '#lib/util';
+
+	const METRIC_OPTIONS: { value: 'plays' | 'minutes'; label: string }[] = [
+		{ value: 'plays', label: 'Plays' },
+		{ value: 'minutes', label: 'Minutes listened (artists/tracks)' }
+	];
 
 	let type = $state<TopType>('artists');
 	let period = $state('overall');
@@ -92,25 +104,15 @@
 <div class="controls">
 	<label
 		>Type
-		<select bind:value={type}>
-			<option value="artists">Artists</option>
-			<option value="albums">Albums</option>
-			<option value="tracks">Tracks</option>
-		</select>
+		<Select bind:value={type} options={TOP_TYPE_OPTIONS} />
 	</label>
 	<label
 		>Period
-		<select bind:value={period}>
-			{#each PERIODS as p (p.value)}<option value={p.value}>{p.label}</option
-				>{/each}
-		</select>
+		<Select bind:value={period} options={PERIODS} />
 	</label>
 	<label
 		>Metric
-		<select bind:value={metric}>
-			<option value="plays">Plays</option>
-			<option value="minutes">Minutes listened (artists/tracks)</option>
-		</select>
+		<Select bind:value={metric} options={METRIC_OPTIONS} />
 	</label>
 	<label
 		>Limit <input

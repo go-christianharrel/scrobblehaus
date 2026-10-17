@@ -17,6 +17,7 @@
 	);
 	--radius: 18px;
 	--shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+	--menu-bg: rgba(24, 27, 39, 0.96);
 	--hover: rgba(255, 255, 255, 0.1);
 	--hover-soft: rgba(255, 255, 255, 0.04);
 	--aside: rgba(12, 14, 20, 0.72);
@@ -44,6 +45,7 @@
 		rgba(255, 154, 86, 0.1)
 	);
 	--shadow: 0 14px 40px rgba(40, 50, 90, 0.12);
+	--menu-bg: rgba(255, 255, 255, 0.98);
 	--hover: rgba(20, 24, 40, 0.09);
 	--hover-soft: rgba(20, 24, 40, 0.04);
 	--aside: rgba(255, 255, 255, 0.72);
@@ -205,6 +207,13 @@ button:disabled {
 	backdrop-filter: blur(16px);
 	border: 1px solid var(--line);
 	border-radius: var(--radius);
+}
+/* Lift the card holding an open dropdown above the cards that follow it. */
+.controls {
+	position: relative;
+}
+.controls:has(.select .menu) {
+	z-index: 30;
 }
 .card {
 	overflow-x: auto;
@@ -529,7 +538,8 @@ td.bar {
 		min-width: 0;
 	}
 	.controls > label input,
-	.controls > label select {
+	.controls > label select,
+	.controls > label .select {
 		width: 100% !important;
 		min-width: 0;
 	}

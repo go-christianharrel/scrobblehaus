@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { api, fetchScrobbles, getTop } from '#lib/lastfm';
 	import { session, settings } from '#lib/settings.svelte';
@@ -19,6 +20,11 @@
 
 	let from = $state('');
 	let to = $state('');
+	const FORMAT_OPTIONS: { value: 'csv' | 'json'; label: string }[] = [
+		{ value: 'csv', label: 'CSV' },
+		{ value: 'json', label: 'JSON' }
+	];
+
 	let format = $state<'csv' | 'json'>('csv');
 	let percent = $state(0);
 	let status = $state('');
@@ -156,10 +162,7 @@
 	<label>To <input type="date" bind:value={to} /></label>
 	<label
 		>Format
-		<select bind:value={format}>
-			<option value="csv">CSV</option>
-			<option value="json">JSON</option>
-		</select>
+		<Select bind:value={format} options={FORMAT_OPTIONS} />
 	</label>
 	<button class="primary" onclick={exportScrobbles} disabled={busy}
 		>Export scrobbles</button
