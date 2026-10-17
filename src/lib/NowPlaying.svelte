@@ -1,9 +1,22 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { api, findImage, PLACEHOLDER } from './lastfm';
+	import {
+		api,
+		findImage,
+		getArtistTracks,
+		getTrackDetails,
+		getTrackHistory,
+		PLACEHOLDER
+	} from './lastfm';
 	import { settings } from './settings.svelte';
 	import { fmt } from './util';
-	import type { RawRecent, RawRecentTrack } from './types';
+	import type {
+		ArtistTrack,
+		RawRecent,
+		RawRecentTrack,
+		TrackDetails,
+		TrackHistory
+	} from './types';
 
 	type Now = {
 		name: string;
@@ -13,6 +26,9 @@
 		live: boolean;
 		when: string;
 		mine: number;
+		details: TrackDetails | null;
+		history: TrackHistory | null;
+		artistTracks: ArtistTrack[];
 	};
 
 	let now = $state<Now | null>(null);
@@ -50,16 +66,11 @@
 			const art = lfmArt
 				? lfmArt['#text']
 				: await findImage('tracks', t.name, artist);
-			let mine = 0;
-			try {
-				const info = await api<{ track: { userplaycount?: string } }>(
-					'track.getinfo',
-					{ artist, track: t.name, username: user }
-				);
-				mine = Number(info.track.userplaycount) || 0;
-			} catch {
-				mine = 0;
-			}
+			const [details, history, artistTracks] = await Promise.all([
+				getTrackDetails(artist, t.name, user).catch(() => null),
+				getTrackHistory(artist, t.name, user).catch(() => null),
+				getArtistTracks(artist, t.name, user).catch(() => [])
+			]);
 			now = {
 				name: t.name,
 				artist,
@@ -70,12 +81,26 @@
 					!live && t.date
 						? new Date(Number(t.date.uts) * 1000).toLocaleString()
 						: '',
-				mine
+				mine: details?.mine ?? 0,
+				details,
+				history,
+				artistTracks
 			};
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		}
 	}
+
+	const duration = (ms: number): string => {
+		const total = Math.round(ms / 1000);
+		return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+	};
+
+	const monthYear = (uts: number): string =>
+		new Date(uts * 1000).toLocaleDateString(undefined, {
+			month: 'short',
+			year: 'numeric'
+		});
 
 	onMount(() => {
 		void refresh();
@@ -105,6 +130,54 @@
 						<b>{fmt(now.mine)}</b> plays by you
 					</p>{/if}
 			</div>
+			{#if now.details || now.history || now.artistTracks.length}
+				<div class="side">
+					{#if now.details?.tags.length}
+						<div class="tags">
+							{#each now.details.tags as tag (tag)}<span>{tag}</span>{/each}
+							{#if now.details.loved}<span class="loved">♥ Loved</span>{/if}
+						</div>
+					{/if}
+					<div class="tiles">
+						{#if now.details}
+							<div class="tile">
+								<b>{fmt(now.details.listeners)}</b><span>Listeners</span>
+							</div>
+							<div class="tile">
+								<b>{fmt(now.details.plays)}</b><span>Global plays</span>
+							</div>
+							{#if now.details.durationMs}
+								<div class="tile">
+									<b>{duration(now.details.durationMs)}</b><span>Duration</span>
+								</div>
+							{/if}
+						{/if}
+						{#if now.history}
+							<div class="tile">
+								<b>{monthYear(now.history.firstUts)}</b>
+								<span>First played</span>
+							</div>
+							<div class="tile">
+								<b>{fmt(now.history.week)}</b><span>Last 7 days</span>
+							</div>
+							<div class="tile">
+								<b>{fmt(now.history.month)}</b><span>Last 30 days</span>
+							</div>
+						{/if}
+					</div>
+					{#if now.artistTracks.length}
+						<div class="more">
+							<h4>More from {now.artist}</h4>
+							{#each now.artistTracks as item (item.name)}
+								<div class="row">
+									<span>{item.name}</span>
+									<em>{fmt(item.mine)} plays</em>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
 {/if}
@@ -228,7 +301,85 @@
 			height: 12px;
 		}
 	}
+	.side {
+		flex: 1 1 340px;
+		display: grid;
+		gap: 12px;
+		min-width: 0;
+	}
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+	.tags span {
+		padding: 4px 12px;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.12);
+		font-size: 12px;
+		font-weight: 600;
+		text-transform: capitalize;
+	}
+	.tags .loved {
+		background: var(--grad);
+		text-transform: none;
+	}
+	.tiles {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 10px;
+	}
+	.tile,
+	.more {
+		background: rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		border-radius: 14px;
+		backdrop-filter: blur(8px);
+	}
+	.tile {
+		padding: 12px 14px;
+		display: grid;
+		gap: 2px;
+	}
+	.tile b {
+		font-family: var(--display);
+		font-size: 20px;
+	}
+	.tile span {
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.more {
+		padding: 12px 14px;
+	}
+	h4 {
+		margin: 0 0 6px;
+		font-size: 12px;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.row {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 5px 0;
+		font-size: 14px;
+	}
+	.row span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.row em {
+		font-style: normal;
+		color: var(--muted);
+		white-space: nowrap;
+	}
 	@media (max-width: 640px) {
+		.tiles {
+			grid-template-columns: repeat(2, 1fr);
+		}
 		.inner {
 			padding: 18px;
 			gap: 18px;
