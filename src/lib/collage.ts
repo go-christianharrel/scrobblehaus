@@ -17,8 +17,16 @@ export type CollageOptions = {
 
 type LabelLine = { text: string; font: string; color: string };
 
-export function loadImage(src: string): Promise<HTMLImageElement | null> {
-	return new Promise((resolve) => {
+/** Pixel density of the exported image, so text and art stay sharp. */
+const SCALE = 2;
+const HI_RES = '/i/u/600x600/';
+
+/** Last.fm serves larger renditions of the same cover from the same URL. */
+const hiResUrl = (src: string): string =>
+	src.replace(/\/i\/u\/(?:\d+x\d+|\d+s)\//, HI_RES);
+
+const loadOne = (src: string): Promise<HTMLImageElement | null> =>
+	new Promise((resolve) => {
 		if (!src) return resolve(null);
 		const im = new Image();
 		im.crossOrigin = 'anonymous';
@@ -26,6 +34,14 @@ export function loadImage(src: string): Promise<HTMLImageElement | null> {
 		im.onerror = () => resolve(null);
 		im.src = src;
 	});
+
+export async function loadImage(src: string): Promise<HTMLImageElement | null> {
+	const sharp = hiResUrl(src);
+	if (sharp !== src) {
+		const im = await loadOne(sharp);
+		if (im) return im;
+	}
+	return loadOne(src);
 }
 
 function fitText(
@@ -174,10 +190,15 @@ export function renderCollage(
 ): void {
 	const ctx = canvas.getContext('2d');
 	if (!ctx) throw new Error('Canvas is not supported in this browser.');
-	canvas.width = o.cols * o.tile + o.gap * (o.cols + 1);
-	canvas.height = o.rows * o.tile + o.gap * (o.rows + 1);
+	const width = o.cols * o.tile + o.gap * (o.cols + 1);
+	const height = o.rows * o.tile + o.gap * (o.rows + 1);
+	canvas.width = width * SCALE;
+	canvas.height = height * SCALE;
+	canvas.style.width = `${width}px`;
+	ctx.scale(SCALE, SCALE);
+	ctx.imageSmoothingQuality = 'high';
 	ctx.fillStyle = o.background;
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	ctx.fillRect(0, 0, width, height);
 	items.forEach((item, idx) => {
 		const x = o.gap + (idx % o.cols) * (o.tile + o.gap);
 		const y = o.gap + Math.floor(idx / o.cols) * (o.tile + o.gap);
