@@ -226,7 +226,6 @@
 	}
 	p {
 		margin: 0;
-		max-width: 560px;
 	}
 	h3 {
 		margin: 28px 0 14px;
