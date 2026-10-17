@@ -7,7 +7,6 @@ export type Insights = {
 	best: { day: string; count: number };
 	bestStreak: number;
 	perDayAvg: number;
-	heat: { day: string; count: number; level: number }[];
 	topArtists: [string, number][];
 	topTracks: [string, number][];
 	onThisDay: { year: number; count: number; top: string }[];
@@ -51,20 +50,6 @@ export function computeInsights(rows: Scrobble[]): Insights {
 
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
-	const start = new Date(today);
-	start.setDate(start.getDate() - (52 * 7 + today.getDay()));
-	const maxDay = Math.max(1, ...perDay.values());
-	const heat: Insights['heat'] = [];
-	for (const d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
-		const day = dayKey(d);
-		const count = perDay.get(day) ?? 0;
-		heat.push({
-			day,
-			count,
-			level: count ? Math.min(4, Math.ceil((count / maxDay) * 4)) : 0
-		});
-	}
-
 	const md = `${today.getMonth()}-${today.getDate()}`;
 	const byYear = new Map<number, Scrobble[]>();
 	for (const r of rows) {
@@ -92,9 +77,99 @@ export function computeInsights(rows: Scrobble[]): Insights {
 		best,
 		bestStreak,
 		perDayAvg: rows.length / span,
-		heat,
 		topArtists: topCounts(rows, (r) => r.artist, 10),
 		topTracks: topCounts(rows, (r) => `${r.artist} — ${r.track}`, 10),
 		onThisDay
 	};
+}
+
+export type PixelDay = { day: string; count: number; level: number };
+
+/** Null cells pad the first week so each weekday stays on its own row. */
+export type PixelYear = { year: number; cells: (PixelDay | null)[] };
+
+export type PixelGrid = { years: PixelYear[]; activeDays: number };
+
+export function pixelGrid(rows: Scrobble[], today = new Date()): PixelGrid {
+	if (!rows.length) return { years: [], activeDays: 0 };
+	const perDay = new Map<string, number>();
+	for (const r of rows) {
+		const k = dayKey(new Date(r.uts * 1000));
+		perDay.set(k, (perDay.get(k) ?? 0) + 1);
+	}
+	const maxDay = Math.max(1, ...perDay.values());
+	const firstYear = new Date(rows[rows.length - 1].uts * 1000).getFullYear();
+	const end = new Date(today);
+	end.setHours(0, 0, 0, 0);
+
+	const years: PixelYear[] = [];
+	for (let year = end.getFullYear(); year >= firstYear; year--) {
+		const cursor = new Date(year, 0, 1);
+		const cells: (PixelDay | null)[] = Array<null>(cursor.getDay()).fill(null);
+		for (; cursor.getFullYear() === year && cursor <= end;) {
+			const day = dayKey(cursor);
+			const count = perDay.get(day) ?? 0;
+			cells.push({
+				day,
+				count,
+				level: count ? Math.min(4, Math.ceil((count / maxDay) * 4)) : 0
+			});
+			cursor.setDate(cursor.getDate() + 1);
+		}
+		years.push({ year, cells });
+	}
+	return { years, activeDays: perDay.size };
+}
+
+/** Top artists inside [from, to] (unix seconds, 0 = open ended). */
+export function wall(
+	rows: Scrobble[],
+	from = 0,
+	to = 0,
+	limit = 50
+): [string, number][] {
+	const inside = rows.filter((r) => r.uts >= from && (!to || r.uts <= to));
+	return topCounts(inside, (r) => r.artist, limit);
+}
+
+export type VelocitySeries = {
+	artist: string;
+	total: number;
+	/** Cumulative scrobbles at the end of each time bucket. */
+	points: number[];
+	/** Busiest bucket, as scrobbles per day. */
+	peakPerDay: number;
+};
+
+export type Velocity = { start: number; end: number; series: VelocitySeries[] };
+
+export function artistVelocity(
+	rows: Scrobble[],
+	artists: string[],
+	buckets = 48
+): Velocity {
+	if (!rows.length) return { start: 0, end: 0, series: [] };
+	const start = rows[rows.length - 1].uts;
+	const end = rows[0].uts;
+	const width = Math.max(1, (end - start) / buckets);
+	const perBucket = new Map(
+		artists.map((a) => [a, Array<number>(buckets).fill(0)])
+	);
+	for (const r of rows) {
+		const counts = perBucket.get(r.artist);
+		if (!counts) continue;
+		counts[Math.min(buckets - 1, Math.floor((r.uts - start) / width))]++;
+	}
+	const bucketDays = width / 86400;
+	const series = artists.map((artist) => {
+		const counts = perBucket.get(artist) ?? [];
+		let running = 0;
+		return {
+			artist,
+			total: counts.reduce((sum, n) => sum + n, 0),
+			points: counts.map((n) => (running += n)),
+			peakPerDay: Math.max(0, ...counts) / bucketDays
+		};
+	});
+	return { start, end, series };
 }
