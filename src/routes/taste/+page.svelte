@@ -308,6 +308,7 @@
 		font-weight: 800;
 		color: #fff;
 		background: var(--grad);
+		background-origin: border-box;
 		box-shadow: 0 10px 28px rgba(255, 45, 85, 0.35);
 	}
 	.code span:nth-child(2) {
@@ -378,6 +379,7 @@
 		height: 16px;
 		border-radius: 6px;
 		background: var(--grad);
+		background-origin: border-box;
 		box-shadow: 0 0 12px rgba(255, 90, 77, 0.7);
 	}
 	@media (max-width: 640px) {
@@ -440,6 +442,7 @@
 		font-weight: 800;
 		letter-spacing: -0.04em;
 		background: var(--grad);
+		background-origin: border-box;
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
