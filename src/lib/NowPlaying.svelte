@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import {
 		api,
 		findImage,
@@ -8,11 +8,11 @@
 		getTrackHistory,
 		PLACEHOLDER
 	} from './lastfm';
+	import { recentFeed, watchRecent } from './recentFeed.svelte';
 	import { settings } from './settings.svelte';
 	import { fmt } from './util';
 	import type {
 		ArtistTrack,
-		RawRecent,
 		RawRecentTrack,
 		TrackDetails,
 		TrackHistory
@@ -33,28 +33,19 @@
 
 	let now = $state<Now | null>(null);
 	let error = $state('');
-	let timer: ReturnType<typeof setInterval> | undefined;
 	let lastKey = '';
 
-	async function refresh(): Promise<void> {
-		if (!settings.username || document.hidden) return;
+	async function update(t: RawRecentTrack | undefined): Promise<void> {
+		if (!settings.username) return;
 		try {
 			const user = settings.requireUser();
-			const data = await api<RawRecent>('user.getrecenttracks', {
-				user,
-				limit: 1
-			});
-			const t: RawRecentTrack | undefined = ([] as RawRecentTrack[]).concat(
-				data.recenttracks.track ?? []
-			)[0];
 			if (!t) {
 				now = null;
 				return;
 			}
 			const live = Boolean(t['@attr']?.nowplaying);
 			const key = `${t.name}|${t.artist['#text']}|${live}`;
-			error = '';
-			// Same track as last poll: nothing to refetch, avoids image/plays lookups every 15s.
+			// Same track as last poll: nothing to refetch, avoids image/plays lookups on every poll.
 			if (key === lastKey && now) return;
 			lastKey = key;
 
@@ -102,11 +93,13 @@
 			year: 'numeric'
 		});
 
-	onMount(() => {
-		void refresh();
-		timer = setInterval(refresh, 15000);
+	onMount(watchRecent);
+
+	$effect(() => {
+		const latest = recentFeed.tracks[0];
+		error = recentFeed.error;
+		untrack(() => void update(latest));
 	});
-	onDestroy(() => clearInterval(timer));
 </script>
 
 {#if error}

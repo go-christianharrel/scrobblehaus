@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { api, findImage, PLACEHOLDER } from '#lib/lastfm';
+	import { findImage, PLACEHOLDER } from '#lib/lastfm';
 	import Icon from '#lib/Icon.svelte';
 	import NowPlaying from '#lib/NowPlaying.svelte';
+	import { recentFeed, watchRecent } from '#lib/recentFeed.svelte';
 	import { settings } from '#lib/settings.svelte';
 	import { TOOLS } from '#lib/tools';
 	import { fmt } from '#lib/util';
-	import type { RawRecent, RawRecentTrack } from '#lib/types';
+	import type { RawRecentTrack } from '#lib/types';
 
 	type Recent = {
 		name: string;
@@ -27,37 +28,32 @@
 					? 'Good afternoon'
 					: 'Good evening';
 
-	async function loadRecent(): Promise<void> {
-		if (!settings.username) return;
-		try {
-			const data = await api<RawRecent>('user.getrecenttracks', {
-				user: settings.username,
-				limit: 12
-			});
-			const tracks = ([] as RawRecentTrack[]).concat(
-				data.recenttracks.track ?? []
-			);
-			recent = await Promise.all(
-				tracks.map(async (t) => {
-					const artist = t.artist['#text'];
-					const img = (t.image ?? [])
-						.slice()
-						.reverse()
-						.find((i) => i['#text'] && !i['#text'].includes(PLACEHOLDER));
-					return {
-						name: t.name,
-						artist,
-						art: img ? img['#text'] : await findImage('tracks', t.name, artist),
-						live: Boolean(t['@attr']?.nowplaying)
-					};
-				})
-			);
-		} catch {
-			recent = [];
-		}
-	}
+	const artOf = (t: RawRecentTrack): string =>
+		(t.image ?? [])
+			.slice()
+			.reverse()
+			.find((i) => i['#text'] && !i['#text'].includes(PLACEHOLDER))?.[
+			'#text'
+		] ?? '';
 
-	onMount(loadRecent);
+	onMount(watchRecent);
+
+	// Show the list right away, then fill in missing artwork as it resolves.
+	$effect(() => {
+		const tracks = recentFeed.tracks;
+		recent = tracks.map((t) => ({
+			name: t.name,
+			artist: t.artist['#text'],
+			art: artOf(t),
+			live: Boolean(t['@attr']?.nowplaying)
+		}));
+		tracks.forEach((t, i) => {
+			if (recent[i].art) return;
+			void findImage('tracks', t.name, t.artist['#text']).then((art) => {
+				if (recent[i]?.name === t.name) recent[i].art = art;
+			});
+		});
+	});
 </script>
 
 <section class="hero">
