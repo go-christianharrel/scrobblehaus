@@ -216,14 +216,16 @@ const imageCache = new Map<string, string>();
 export async function findImage(
 	type: TopType,
 	name: string,
-	artist: string
+	artist: string,
+	fallback = false
 ): Promise<string> {
-	const key = `${type}|${name}|${artist}`;
+	const key = `${type}|${name}|${artist}|${fallback}`;
 	const cached = imageCache.get(key);
 	if (cached !== undefined) return cached;
 	let url = '';
 	try {
 		const q = new URLSearchParams({ type, name, artist });
+		if (fallback) q.set('fallback', '1');
 		const res = await fetch(`/api/image?${q}`);
 		url = ((await res.json()) as { url: string }).url;
 	} catch {

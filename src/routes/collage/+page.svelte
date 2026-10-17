@@ -2,7 +2,7 @@
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
-	import { fillImages, getTop } from '#lib/lastfm';
+	import { fillImages, findImage, getTop } from '#lib/lastfm';
 	import { loadImage, renderCollage } from '#lib/collage';
 	import { settings } from '#lib/settings.svelte';
 	import {
@@ -61,6 +61,17 @@
 		});
 	}
 
+	/** Artists with no usable picture get the cover of one of their albums. */
+	async function fillMissingArtists(top: TopItem[]): Promise<void> {
+		await Promise.all(
+			top.map(async (item, idx) => {
+				if (images[idx]) return;
+				const url = await findImage('artists', item.name, '', true);
+				images[idx] = await loadImage(url, true);
+			})
+		);
+	}
+
 	async function generate(): Promise<void> {
 		busy = true;
 		failed = false;
@@ -77,7 +88,10 @@
 				(n, t) => (status = `Looking up images… ${n}/${t}`)
 			);
 			status = 'Loading cover art…';
-			images = await Promise.all(top.map((i) => loadImage(i.img)));
+			images = await Promise.all(
+				top.map((i) => loadImage(i.img, type === 'artists'))
+			);
+			if (type === 'artists') await fillMissingArtists(top);
 			items = top;
 			shown = { cols: c, rows: r, type };
 			draw();
