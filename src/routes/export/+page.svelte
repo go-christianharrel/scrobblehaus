@@ -1,7 +1,8 @@
 <script lang="ts">
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
-	import { api, fetchScrobbles, getTop } from '#lib/lastfm';
+	import { api, getTop } from '#lib/lastfm';
+	import { loadScrobbles } from '#lib/scrobbleCache';
 	import { session, settings } from '#lib/settings.svelte';
 	import type { TopType } from '#lib/types';
 	import { download, fmt, stamp, toCsv } from '#lib/util';
@@ -58,7 +59,7 @@
 				? Math.floor(new Date(`${to}T23:59:59`).getTime() / 1000)
 				: 0;
 			percent = 0;
-			const rows = await fetchScrobbles({
+			const rows = await loadScrobbles({
 				user,
 				from: start,
 				to: end,
