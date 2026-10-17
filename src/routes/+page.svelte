@@ -173,9 +173,12 @@
 		color: var(--text);
 	}
 	.about p {
-		max-width: 860px;
+		max-width: none;
 		margin-top: 12px;
 		line-height: 1.6;
+		/* Fills the width in short, readable columns instead of one long line. */
+		columns: 2 340px;
+		column-gap: 40px;
 	}
 	.eyebrow-skel {
 		width: 120px;
