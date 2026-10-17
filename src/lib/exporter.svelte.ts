@@ -1,5 +1,4 @@
 import { api, getTop } from './lastfm';
-import { loadScrobbles } from './scrobbleCache';
 import { session, settings } from './settings.svelte';
 import type { TopType } from './types';
 import { download, fmt, stamp, toCsv } from './util';
@@ -67,6 +66,8 @@ export const exportScrobbles = (opts: ScrobbleExportOptions): Promise<void> =>
 	run('Exporting scrobbles', async () => {
 		const user = settings.requireUser();
 		exportJob.percent = 0;
+		// Loaded on demand so the cache code stays out of every page's bundle.
+		const { loadScrobbles } = await import('./scrobbleCache');
 		const rows = await loadScrobbles({
 			user,
 			from: toUnix(opts.from, '00:00:00'),
