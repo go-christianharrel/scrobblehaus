@@ -37,8 +37,7 @@
 	let sampleSize = $state(0);
 	const abort = { aborted: false };
 
-	async function show(rows: Scrobble[]): Promise<void> {
-		const user = settings.requireUser();
+	async function loadProfile(user: string): Promise<Profile> {
 		const info = await api<{
 			user: {
 				name: string;
@@ -56,7 +55,7 @@
 		} catch {
 			// optional stat
 		}
-		profile = {
+		return {
 			name: info.user.name,
 			playcount: Number(info.user.playcount),
 			since: new Date(
@@ -64,8 +63,16 @@
 			).getFullYear(),
 			artists
 		};
+	}
+
+	function render(rows: Scrobble[]): void {
 		data = computeInsights(rows);
 		sampleSize = rows.length;
+	}
+
+	async function show(rows: Scrobble[]): Promise<void> {
+		profile = await loadProfile(settings.requireUser());
+		render(rows);
 		status = '';
 	}
 
@@ -78,15 +85,19 @@
 			const maxPages =
 				depth === 'all' ? Infinity : Math.ceil(Number(depth) / 200);
 			const { loadScrobbles } = await import('#lib/scrobbleCache');
+			// Needed before the first partial result can be shown.
+			profile = await loadProfile(user);
 			const rows = await loadScrobbles({
 				user,
 				maxPages,
 				signal: abort,
+				onPartial: render,
 				onProgress: (p, tp, total) =>
 					(status = `Page ${p}/${tp} — ${fmt(Math.min(p * 200, total))} of ${fmt(total)} scrobbles…`)
 			});
 			session.scrobbles = rows;
-			await show(rows);
+			render(rows);
+			status = '';
 		} catch (e) {
 			failed = true;
 			status = e instanceof Error ? e.message : String(e);
