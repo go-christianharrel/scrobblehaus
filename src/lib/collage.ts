@@ -35,13 +35,31 @@ const loadOne = (src: string): Promise<HTMLImageElement | null> =>
 		im.src = src;
 	});
 
-export async function loadImage(src: string): Promise<HTMLImageElement | null> {
-	const sharp = hiResUrl(src);
-	if (sharp !== src) {
-		const im = await loadOne(sharp);
-		if (im) return im;
+/** True for a solid-colour picture, which sources return for missing art. */
+function isBlank(im: HTMLImageElement): boolean {
+	const probe = document.createElement('canvas');
+	probe.width = probe.height = 8;
+	const ctx = probe.getContext('2d');
+	if (!ctx) return false;
+	ctx.drawImage(im, 0, 0, 8, 8);
+	const px = ctx.getImageData(0, 0, 8, 8).data;
+	let lo = 255;
+	let hi = 0;
+	for (let i = 0; i < px.length; i += 4) {
+		const lum = (px[i] + px[i + 1] + px[i + 2]) / 3;
+		lo = Math.min(lo, lum);
+		hi = Math.max(hi, lum);
 	}
-	return loadOne(src);
+	return hi - lo < 8;
+}
+
+export async function loadImage(
+	src: string,
+	rejectBlank = false
+): Promise<HTMLImageElement | null> {
+	const sharp = hiResUrl(src);
+	const im = (sharp !== src && (await loadOne(sharp))) || (await loadOne(src));
+	return im && rejectBlank && isBlank(im) ? null : im;
 }
 
 function fitText(
