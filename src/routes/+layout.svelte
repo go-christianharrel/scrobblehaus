@@ -691,7 +691,7 @@
 	main {
 		padding: 28px 34px 64px;
 		min-width: 0;
-		max-width: 1240px;
+		max-width: 2200px;
 		width: 100%;
 	}
 	.about {
