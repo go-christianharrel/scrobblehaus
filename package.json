@@ -29,6 +29,7 @@
 	"imports": {
 		"#lib": "./src/lib/index.ts",
 		"#lib/assets/*": "./src/lib/assets/*",
+		"#lib/exporter.svelte": "./src/lib/exporter.svelte.ts",
 		"#lib/settings.svelte": "./src/lib/settings.svelte.ts",
 		"#lib/*.svelte": "./src/lib/*.svelte",
 		"#lib/*": "./src/lib/*.ts"
