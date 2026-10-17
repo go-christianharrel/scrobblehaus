@@ -1,5 +1,11 @@
 export type TopType = 'albums' | 'artists' | 'tracks';
 
+export const TOP_TYPE_OPTIONS: { value: TopType; label: string }[] = [
+	{ value: 'artists', label: 'Artists' },
+	{ value: 'albums', label: 'Albums' },
+	{ value: 'tracks', label: 'Tracks' }
+];
+
 export type Period = {
 	value: string;
 	label: string;
