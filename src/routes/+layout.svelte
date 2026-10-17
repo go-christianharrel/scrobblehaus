@@ -698,7 +698,6 @@
 		margin-top: 40px;
 		padding-top: 22px;
 		border-top: 1px solid var(--line);
-		max-width: 680px;
 	}
 	.about h2 {
 		font-size: 18px;
