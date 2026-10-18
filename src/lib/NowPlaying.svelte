@@ -201,6 +201,7 @@
 		--text: #f1f3f9;
 		--muted: rgba(241, 243, 249, 0.72);
 		color: var(--text);
+		background: #0b0c12;
 		position: relative;
 		overflow: hidden;
 		border-radius: 26px;
@@ -241,7 +242,7 @@
 		height: 220px;
 		border-radius: 18px;
 		object-fit: cover;
-		background: var(--panel2);
+		background: rgba(255, 255, 255, 0.08);
 		box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
 	}
 	.meta {
@@ -281,8 +282,8 @@
 		text-transform: uppercase;
 	}
 	.badge.off {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--muted);
+		background: rgba(255, 255, 255, 0.14);
+		color: var(--text);
 	}
 	.eq {
 		display: inline-flex;
