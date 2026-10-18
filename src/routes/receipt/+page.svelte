@@ -11,12 +11,18 @@
 		type TopItem,
 		type TopType
 	} from '#lib/types';
-	import { drawReceipt } from '#lib/receiptImage';
+	import {
+		drawReceipt,
+		RECEIPT_THEME_OPTIONS,
+		RECEIPT_THEMES,
+		type ReceiptTheme
+	} from '#lib/receiptImage';
 	import { clamp, fmt } from '#lib/util';
 
 	let type = $state<TopType>('tracks');
 	let period = $state('1month');
 	let limit = $state(10);
+	let theme = $state<ReceiptTheme>('classic');
 	let items = $state<TopItem[]>([]);
 	let user = $state('');
 	let order = $state(0);
@@ -29,6 +35,7 @@
 
 	let canvas: HTMLCanvasElement;
 
+	const colors = $derived(RECEIPT_THEMES[theme]);
 	const total = $derived(items.reduce((a, i) => a + i.plays, 0));
 
 	async function make(): Promise<void> {
@@ -60,13 +67,14 @@
 			subtitle: `ORDER #${order} FOR ${user.toUpperCase()}`,
 			printedAt,
 			user,
-			items
+			items,
+			theme
 		});
 		canvas.toBlob((blob) => {
 			if (!blob) return;
 			const a = document.createElement('a');
 			a.href = URL.createObjectURL(blob);
-			a.download = `lastfm-receipt-${shownType}-${shownPeriod}.png`;
+			a.download = `lastfm-receipt-${shownType}-${shownPeriod}-${theme}.png`;
 			a.click();
 			setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 		});
@@ -88,6 +96,10 @@
 		<Select bind:value={period} options={PERIODS} />
 	</label>
 	<label
+		>Theme
+		<Select bind:value={theme} options={RECEIPT_THEME_OPTIONS} />
+	</label>
+	<label
 		>Items <input
 			type="number"
 			min="3"
@@ -107,7 +119,10 @@
 <canvas bind:this={canvas} hidden></canvas>
 
 {#if items.length}
-	<div class="receipt">
+	<div
+		class="receipt"
+		style="--paper: {colors.paper}; --ink: {colors.ink}; --rule: {colors.rule}; --accent: {colors.accent}"
+	>
 		<h2>SCROBBLEHAUS</h2>
 		<div class="c">
 			TOP {shownType.toUpperCase()} — {periodLabel(shownPeriod).toUpperCase()}
@@ -136,8 +151,8 @@
 
 <style>
 	.receipt {
-		background: #fff;
-		color: #111;
+		background: var(--paper);
+		color: var(--ink);
 		font-family: 'Courier New', monospace;
 		max-width: 380px;
 		margin: 8px auto;
@@ -156,6 +171,7 @@
 		animation: rise 0.5s ease both;
 	}
 	h2 {
+		color: var(--accent);
 		text-align: center;
 		margin: 0 0 4px;
 		font-size: 18px;
@@ -166,7 +182,7 @@
 	}
 	hr {
 		border: 0;
-		border-top: 1px dashed #444;
+		border-top: 1px dashed var(--rule);
 		margin: 10px 0;
 	}
 	.r {
@@ -184,12 +200,12 @@
 		margin: 12px 0 4px;
 		background: repeating-linear-gradient(
 			90deg,
-			#111 0 2px,
-			#fff 2px 4px,
-			#111 4px 5px,
-			#fff 5px 9px,
-			#111 9px 12px,
-			#fff 12px 14px
+			var(--ink) 0 2px,
+			var(--paper) 2px 4px,
+			var(--ink) 4px 5px,
+			var(--paper) 5px 9px,
+			var(--ink) 9px 12px,
+			var(--paper) 12px 14px
 		);
 	}
 </style>
