@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Skeleton from '#lib/Skeleton.svelte';
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
@@ -137,7 +138,9 @@
 
 <div class="status" class:err={failed} class:busy>{status}</div>
 
-{#if rows.length}
+{#if busy && !rows.length}
+	<Skeleton variant="table" />
+{:else if rows.length}
 	<div class="card" bind:this={shot}>
 		<table>
 			<thead>

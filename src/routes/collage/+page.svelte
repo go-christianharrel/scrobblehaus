@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Skeleton from '#lib/Skeleton.svelte';
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
@@ -198,6 +199,10 @@
 	When Last.fm has no image, we look it up on Deezer and iTunes. If nothing is
 	found, a colour tile with the name is shown.
 </p>
+
+{#if busy && !ready}
+	<Skeleton variant="grid" rows={10} />
+{/if}
 
 <div class="wrap">
 	<canvas bind:this={canvas} width="10" height="10"></canvas>
