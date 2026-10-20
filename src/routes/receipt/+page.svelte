@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Skeleton from '#lib/Skeleton.svelte';
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
@@ -118,7 +119,9 @@
 
 <canvas bind:this={canvas} hidden></canvas>
 
-{#if items.length}
+{#if busy && !items.length}
+	<Skeleton variant="receipt" rows={12} />
+{:else if items.length}
 	<div
 		class="receipt"
 		style="--paper: {colors.paper}; --ink: {colors.ink}; --rule: {colors.rule}; --accent: {colors.accent}"

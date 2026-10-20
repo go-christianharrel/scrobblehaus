@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Skeleton from '#lib/Skeleton.svelte';
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
 	import { onMount } from 'svelte';
@@ -151,7 +152,9 @@
 </div>
 <div class="status" class:err={failed} class:busy>{status}</div>
 
-{#if data && profile}
+{#if busy && !data}
+	<Skeleton variant="stats" />
+{:else if data && profile}
 	<div bind:this={shot}>
 		<div class="stats">
 			<div class="stat">

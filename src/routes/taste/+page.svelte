@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Skeleton from '#lib/Skeleton.svelte';
 	import { saveElementAsPng } from '#lib/saveImage';
 	import Select from '#lib/Select.svelte';
 	import PageHeader from '#lib/PageHeader.svelte';
@@ -167,7 +168,9 @@
 </div>
 <div class="status" class:err={failed} class:busy>{status}</div>
 
-{#if result}
+{#if busy && !result}
+	<Skeleton variant="stats" />
+{:else if result}
 	<div bind:this={shot}>
 		<div class="card type">
 			<div class="type-head">
