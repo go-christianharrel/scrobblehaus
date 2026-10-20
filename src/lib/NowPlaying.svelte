@@ -245,9 +245,11 @@
 		background: rgba(255, 255, 255, 0.08);
 		box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
 	}
+	/* Fits the title when short; long titles wrap at 400px so the stats keep their room. */
 	.meta {
 		min-width: 0;
-		flex: 1 1 320px;
+		max-width: 400px;
+		flex: 0 1 auto;
 	}
 	h2 {
 		font-size: clamp(24px, 3.4vw, 40px);
