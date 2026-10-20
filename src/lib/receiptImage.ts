@@ -1,12 +1,56 @@
 import type { TopItem } from '#lib/types';
 import { fmt } from '#lib/util';
 
+export type ReceiptTheme = 'classic' | 'dark' | 'thermal' | 'sunset';
+
+type ThemeColors = {
+	paper: string;
+	ink: string;
+	rule: string;
+	accent: string;
+};
+
+export const RECEIPT_THEMES: Record<ReceiptTheme, ThemeColors> = {
+	classic: {
+		paper: '#ffffff',
+		ink: '#111111',
+		rule: '#444444',
+		accent: '#111111'
+	},
+	dark: {
+		paper: '#16161d',
+		ink: '#f1f1f4',
+		rule: '#6b6b7a',
+		accent: '#ff5a4d'
+	},
+	thermal: {
+		paper: '#f4ecd8',
+		ink: '#2b2b2b',
+		rule: '#7a6f58',
+		accent: '#2b2b2b'
+	},
+	sunset: {
+		paper: '#fff1ea',
+		ink: '#3a1510',
+		rule: '#c4665a',
+		accent: '#e8343f'
+	}
+};
+
+export const RECEIPT_THEME_OPTIONS: { value: ReceiptTheme; label: string }[] = [
+	{ value: 'classic', label: 'Classic' },
+	{ value: 'dark', label: 'Dark' },
+	{ value: 'thermal', label: 'Thermal' },
+	{ value: 'sunset', label: 'Sunset' }
+];
+
 export type ReceiptData = {
 	title: string;
 	subtitle: string;
 	printedAt: string;
 	user: string;
 	items: TopItem[];
+	theme: ReceiptTheme;
 };
 
 const SCALE = 2;
@@ -45,7 +89,8 @@ export function drawReceipt(
 	canvas.height = height * SCALE;
 	ctx.scale(SCALE, SCALE);
 
-	ctx.fillStyle = '#fff';
+	const colors = RECEIPT_THEMES[data.theme];
+	ctx.fillStyle = colors.paper;
 	ctx.beginPath();
 	ctx.moveTo(0, 0);
 	ctx.lineTo(WIDTH, 0);
@@ -57,8 +102,8 @@ export function drawReceipt(
 	ctx.closePath();
 	ctx.fill();
 
-	ctx.fillStyle = '#111';
-	ctx.strokeStyle = '#444';
+	ctx.fillStyle = colors.ink;
+	ctx.strokeStyle = colors.rule;
 	ctx.font = FONT;
 	ctx.textBaseline = 'middle';
 	const bold = `bold ${FONT}`;
@@ -68,8 +113,9 @@ export function drawReceipt(
 	ctx.font = FONT;
 	let y = PAD + LINE / 2;
 
-	const center = (text: string, font = FONT): void => {
+	const center = (text: string, font = FONT, color = colors.ink): void => {
 		ctx.font = font;
+		ctx.fillStyle = color;
 		ctx.textAlign = 'center';
 		ctx.fillText(text, WIDTH / 2, y);
 		y += LINE;
@@ -95,7 +141,7 @@ export function drawReceipt(
 		y += LINE;
 	};
 
-	center('SCROBBLEHAUS', 'bold 18px "Courier New", monospace');
+	center('SCROBBLEHAUS', 'bold 18px "Courier New", monospace', colors.accent);
 	center(data.title);
 	center(data.subtitle);
 	center(data.printedAt);
